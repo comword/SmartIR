@@ -1,3 +1,3 @@
 [submodule "SmartIR-WebInterface"]
-	path = SmartIR-WebInterface
+	path = html
 	url = https://github.com/comword/SmartIR-WebInterface.git
