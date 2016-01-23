@@ -8,10 +8,6 @@
 #include "Defines.h"
 #include "tinyxml.h"
 
-#include <map>
-#include <memory>
-struct IRsDef;
-using IRsMap = std::map<int,IRsDef *>;
 class xml_helper
 {
 	public:
@@ -20,12 +16,11 @@ class xml_helper
 		~xml_helper();
 		int load_sys_config();
 		void unload_sys_conf();
-		const char *get_gohttp_so();
-		IRsMap get_IRs_conf();
+		const char *get_database_path();
 	protected:
 		TiXmlDocument *doc;
-		const char *gohttp_so;
-		std::unique_ptr<IRsMap> IRs_config;
+		const char *database_path;
+		const char *python_path;
 };
 //only one xml class
 extern xml_helper *conf;

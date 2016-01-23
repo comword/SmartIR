@@ -79,7 +79,8 @@ ifeq ($(TARGETSYSTEM), LINUX)
 endif
 #LDFLAGS += -lrt
 LDFLAGS += -ltinyxml
-LDFLAGS += -ldl
+LDFLAGS += -lpthread
+LDFLAGS += -lpython2.7
 #LDFLAGS += -L.
 all: $(TARGET) $(L10N)
 	@
@@ -92,10 +93,3 @@ $(ODIR)/%.o: $(SRC_DIR)/%.cpp
 clean:
 	rm -rf $(TARGET)
 	rm -rf $(ODIR)
-	rm -rf $(CURDIR)/golang/pkg
-	rm -rf $(CURDIR)/golang/*.so
-	rm -rf *.so
-go:
-	export GOPATH=$(CURDIR)/golang
-	cd golang/src;go build -buildmode=c-shared -o http.so httpserver
-	#go install

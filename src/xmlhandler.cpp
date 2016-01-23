@@ -13,8 +13,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 //xml_helper method
-xml_helper::xml_helper(const char *file_path) :
-IRs_config(new IRsMap())
+xml_helper::xml_helper(const char *file_path)
 {
 	std::string exp;
 	std::ifstream fin(file_path);
@@ -35,17 +34,16 @@ xml_helper::~xml_helper()
 }
 int xml_helper::load_sys_config()
 {
-
+	TiXmlHandle docHandle(doc);
+	TiXmlElement *Tree = docHandle.FirstChild("DataBase").ToElement();
+	this -> database_path = Tree -> Attribute("path");
+	return 0;
 }
 void xml_helper::unload_sys_conf()
 {
 
 }
-IRsMap xml_helper::get_IRs_conf()
+const char *xml_helper::get_database_path()
 {
-	return *IRs_config;
-}
-const char *xml_helper::get_gohttp_so()
-{
-	return this -> gohttp_so;
+	return this -> database_path;
 }

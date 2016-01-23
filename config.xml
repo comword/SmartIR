@@ -1,3 +1,2 @@
 <?xml version="1.0" ?>
 <DataBase path="./data.db"/>
-<Gohttp so="./http.so"/>
