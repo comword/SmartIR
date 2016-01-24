@@ -81,7 +81,8 @@ endif
 LDFLAGS += -ltinyxml
 LDFLAGS += -lpthread
 LDFLAGS += -lpython2.7
-#LDFLAGS += -L.
+LDFLAGS += -ldl
+LDFLAGS += -L.
 all: $(TARGET) $(L10N)
 	@
 $(TARGET): $(ODIR) $(OBJS)
