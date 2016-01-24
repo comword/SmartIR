@@ -18,9 +18,11 @@ public:
   int (*piThreadCreate) (void *(*fn)(void *));
   int (*piHiPri) (int pri);
   int (*waitForInterrupt) (int pin, int mS);
+  int (*digitalRead) (int pin);
   int gpio_set_edge(unsigned int gpio, char *edge);
   static void *wait_for_IR (void * ptr);
 private:
   void *wiringPi_handle;
+  char* IR_buf;
 };
 extern IRReader *IR;
