@@ -11,9 +11,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dlfcn.h>
 #include <stdexcept>
-#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
