@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     exit_handler(999);
   }
   try {
-    IR = new IRReader(conf->get_wiringPi_path());
+    IR = new IRReader();
   }
   catch (std::runtime_error &e) {
     std::cerr<<e.what()<<std::endl;

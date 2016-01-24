@@ -6,23 +6,22 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "wiringPi.h"
-
 class IRReader
 {
 public:
-  IRReader(const char* wiringPi_path);
+  IRReader();
   virtual ~IRReader();
-  int (*wiringPiSetupSys) ();
-  int (*wiringPiISR) (int pin, int edgeType,  void (*function)(void)) ;
-  int (*piThreadCreate) (void *(*fn)(void *));
-  int (*piHiPri) (int pri);
-  int (*waitForInterrupt) (int pin, int mS);
-  int (*digitalRead) (int pin);
-  int gpio_set_edge(unsigned int gpio, char *edge);
+  int gpio_set_edge(unsigned int gpio,const char *edge);
+  int gpio_fd_open(unsigned int gpio);
+  int gpio_fd_close(int fd);
+  int gpio_export(unsigned int gpio);
+  int gpio_unexport(unsigned int gpio);
+  int gpio_set_dir(unsigned int gpio, unsigned int out_flag);
+  int gpio_set_value(int value_fd, unsigned int value);
+  int gpio_get_value(int value_fd);
   static void *wait_for_IR (void * ptr);
 private:
-  void *wiringPi_handle;
+  int fd;
   char* IR_buf;
 };
 extern IRReader *IR;

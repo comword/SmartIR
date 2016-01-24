@@ -17,11 +17,9 @@ class xml_helper
 		int load_sys_config();
 		void unload_sys_conf();
 		const char *get_database_path();
-		const char *get_wiringPi_path();
 	protected:
 		TiXmlDocument *doc;
 		const char *database_path;
-		const char *wiringPi_path;
 };
 //only one xml class
 extern xml_helper *conf;
