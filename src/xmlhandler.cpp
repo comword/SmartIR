@@ -37,6 +37,8 @@ int xml_helper::load_sys_config()
 	TiXmlHandle docHandle(doc);
 	TiXmlElement *Tree = docHandle.FirstChild("DataBase").ToElement();
 	this -> database_path = Tree -> Attribute("path");
+	Tree = docHandle.FirstChild("wiringPi").ToElement();
+	this -> wiringPi_path = Tree -> Attribute("path");
 	return 0;
 }
 void xml_helper::unload_sys_conf()
@@ -46,4 +48,8 @@ void xml_helper::unload_sys_conf()
 const char *xml_helper::get_database_path()
 {
 	return this -> database_path;
+}
+const char *xml_helper::get_wiringPi_path()
+{
+	return this -> wiringPi_path;
 }

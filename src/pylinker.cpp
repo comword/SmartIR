@@ -26,7 +26,7 @@ pylinker::pylinker()
   pthread_t tid;
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-  int res = pthread_create(&tid, NULL, pylinker::run_thread, this);
+  int res = pthread_create(&tid, &attr, pylinker::run_thread, this);
   if (res)
     throw std::runtime_error(std::string("pylinker::pthread_create() Failed!\n"));
 }

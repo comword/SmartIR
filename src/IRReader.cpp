@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <stdexcept>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <pthread.h>
 IRReader::IRReader(const char* wiringPi_path)
 {
   std::string exp;
@@ -29,13 +33,49 @@ IRReader::IRReader(const char* wiringPi_path)
 		return;
 	}
   dlerror();
-  wiringPiSetup = (int(*)())dlsym(wiringPi_handle, "wiringPiSetup"); 
-  if(wiringPiSetup () == -1){
-		exp=std::string("IRReader.cpp:assert wiringPiSetup () == -1:")+strerror(errno);
+  wiringPiSetupSys = (int(*)())dlsym(wiringPi_handle, "wiringPiSetupSys");
+  wiringPiISR = (int(*)(int,int,void (*)(void)))dlsym(wiringPi_handle, "wiringPiISR");
+  piThreadCreate = (int (*) (void *(*)(void *)))dlsym(wiringPi_handle, "piThreadCreate");
+  piHiPri= (int (*) (int))dlsym(wiringPi_handle, "piHiPri");
+  waitForInterrupt = (int(*)(int, int))dlsym(wiringPi_handle, "waitForInterrupt");
+  if(wiringPiSetupSys () == -1){
+		exp = std::string("IRReader.cpp:assert wiringPiSetup () == -1:") + strerror(errno);
 		dlclose(wiringPi_handle);
 		throw std::runtime_error(exp);
 		return;
 	}
+  pthread_attr_t attr;
+  pthread_t tid;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  int res = pthread_create(&tid, &attr, IRReader::wait_for_IR, this);
+  if (res)
+    throw std::runtime_error(std::string("pylinker::pthread_create() Failed!\n"));
+}
+int IRReader::gpio_set_edge(unsigned int gpio, char *edge)
+{
+	int fd;
+	char buf[64];
+	snprintf(buf, sizeof(buf),"/sys/class/gpio" "/gpio%d/edge", gpio);
+	fd = open(buf, O_WRONLY);
+	if (fd < 0) {
+		perror("gpio/set-edge");
+		return fd;
+	}
+	write(fd, edge, strlen(edge) + 1);
+	close(fd);
+	return 0;
+}
+void *IRReader::wait_for_IR (void * ptr)
+{
+  IRReader *Mclass = (IRReader *)ptr;
+  Mclass->piHiPri(10);
+  do {
+    if(Mclass->waitForInterrupt(17,-1) > 0) { //GPIO 17
+      printf("Found IR signal.");
+      //start timer
+    }
+  } while(1);
 }
 IRReader::~IRReader()
 {

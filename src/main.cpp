@@ -7,6 +7,7 @@
 */
 #include "xmlhandler.h"
 #include "pylinker.h"
+#include "IRReader.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -20,6 +21,7 @@
 
 xml_helper *conf;
 pylinker *web;
+IRReader *IR;
 void exit_handler(int s);
 
 namespace {
@@ -63,7 +65,7 @@ int main(int argc, char *argv[])
       help_section_system,
       [&is_daemon](int, const char **) -> int {
         is_daemon = true;
-        return 1;
+        return 0;
       }
     }
   };
@@ -118,9 +120,11 @@ int main(int argc, char *argv[])
     if (sid < 0) {
       exit(EXIT_FAILURE);
     }
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
+    freopen("/dev/null", "w",stdout);
+    freopen("/dev/null", "w",stderr);
+    //close(STDIN_FILENO);
+    //close(STDOUT_FILENO);
+    //close(STDERR_FILENO);
   }
 //  std::system("clear"); // Clear screen
   struct sigaction sigHandler;
@@ -138,6 +142,13 @@ int main(int argc, char *argv[])
   catch (std::runtime_error &e) {
     std::cerr<<e.what()<<std::endl;
     exit_handler(999);
+  }
+  try {
+    IR = new IRReader(conf->get_wiringPi_path());
+  }
+  catch (std::runtime_error &e) {
+    std::cerr<<e.what()<<std::endl;
+    std::cerr<<"IR module won't work!"<<std::endl;
   }
   do {
     sleep(1);

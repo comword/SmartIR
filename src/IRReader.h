@@ -13,7 +13,14 @@ class IRReader
 public:
   IRReader(const char* wiringPi_path);
   virtual ~IRReader();
-  int (*wiringPiSetup) ();
+  int (*wiringPiSetupSys) ();
+  int (*wiringPiISR) (int pin, int edgeType,  void (*function)(void)) ;
+  int (*piThreadCreate) (void *(*fn)(void *));
+  int (*piHiPri) (int pri);
+  int (*waitForInterrupt) (int pin, int mS);
+  int gpio_set_edge(unsigned int gpio, char *edge);
+  static void *wait_for_IR (void * ptr);
 private:
   void *wiringPi_handle;
 };
+extern IRReader *IR;
