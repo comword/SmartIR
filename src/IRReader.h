@@ -11,6 +11,7 @@ class IRReader
 public:
   IRReader();
   virtual ~IRReader();
+  int piHiPri (int pri);
   int gpio_set_edge(unsigned int gpio,const char *edge);
   int gpio_fd_open(unsigned int gpio);
   int gpio_fd_close(int fd);
@@ -20,6 +21,7 @@ public:
   int gpio_set_value(int value_fd, unsigned int value);
   int gpio_get_value(int value_fd);
   static void *wait_for_IR (void * ptr);
+  void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
 private:
   int fd;
   char* IR_buf;

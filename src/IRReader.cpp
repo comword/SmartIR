@@ -16,6 +16,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <poll.h>
+#include <iostream>
+#include <sched.h>
 
 #define IR_GPIO 17
 
@@ -34,7 +36,16 @@ IRReader::IRReader()
   int res = pthread_create(&tid, &attr, IRReader::wait_for_IR, this);
   if (res)
     throw std::runtime_error(std::string("IRReader::pthread_create() Failed!\n"));
-  IR_buf = (char*) malloc(126*sizeof(char));//125Byte
+  IR_buf = (char*) malloc(301*sizeof(char));
+}
+int IRReader::piHiPri (int pri)
+{
+  struct sched_param sched ;
+  memset (&sched, 0, sizeof(sched)) ;
+  if (pri > sched_get_priority_max (SCHED_RR))
+    pri = sched_get_priority_max (SCHED_RR) ;
+  sched.sched_priority = pri ;
+  return sched_setscheduler (0, SCHED_RR, &sched) ;
 }
 int IRReader::gpio_set_edge(unsigned int gpio,const char *edge)
 {
@@ -50,7 +61,7 @@ int IRReader::gpio_set_edge(unsigned int gpio,const char *edge)
 	close(fd);
 	return 0;
 }
-int IRReader::gpio_fd_open(unsigned int gpio)
+inline int IRReader::gpio_fd_open(unsigned int gpio)
 {
 	int fd;
 	char buf[64];
@@ -61,7 +72,7 @@ int IRReader::gpio_fd_open(unsigned int gpio)
 	}
 	return fd;
 }
-int IRReader::gpio_fd_close(int fd)
+inline int IRReader::gpio_fd_close(int fd)
 {
 	return close(fd);
 }
@@ -76,7 +87,7 @@ int IRReader::gpio_export(unsigned int gpio)
 	}
 	len = snprintf(buf, sizeof(buf), "%d", gpio);
 	write(fd, buf, len);
-  close(fd);
+	close(fd);
 	return 0;
 }
 int IRReader::gpio_unexport(unsigned int gpio)
@@ -118,7 +129,7 @@ int IRReader::gpio_set_value(int value_fd, unsigned int value)
 		write(value_fd, "0", 2);
 	return 0;
 }
-int IRReader::gpio_get_value(int value_fd)
+inline int IRReader::gpio_get_value(int value_fd)
 {
 	char ch;
 	read(value_fd, &ch, 1);
@@ -131,47 +142,86 @@ int IRReader::gpio_get_value(int value_fd)
 }
 void *IRReader::wait_for_IR (void * ptr)
 {
-  struct pollfd polls;
-  IRReader *Mclass = (IRReader *)ptr;
-  int gpio_fd = Mclass -> gpio_fd_open(IR_GPIO);
-  polls.fd = gpio_fd;
+	struct pollfd polls;
+	IRReader *Mclass = (IRReader *)ptr;
+	char * buffer = (char*) malloc(126*sizeof(char));
+	uint8_t c;
+	int gpio_fd = Mclass -> gpio_fd_open(IR_GPIO);
+	polls.fd = gpio_fd;
 	polls.events = POLLPRI;
-  char * buffer = (char*) malloc(126*sizeof(char));//125Byte
-  do {
+	Mclass->piHiPri(20);
+	do {
 //HIGH ------       -----
 // LOW      |_______|   |....Datas
 //             9ms  4.5ms
-    int i = 0;
-    int j = 0;
-    int k = 0;
-    buffer = (char *)memset(buffer,0,126*sizeof(char));
-    poll(&polls,1, -1);//waiting
-    if(polls.revents & POLLPRI) { //got it!
-      char tmp = 0;
-      usleep(2000); //anti-interference
-      if(Mclass->gpio_get_value(gpio_fd)==1)//interference
-        continue;
-      while(Mclass->gpio_get_value(gpio_fd)==1){};
-      while(Mclass->gpio_get_value(gpio_fd)==0){};
-      while (i < 1001) { //read for 1 secound (1000*100us)
-        tmp = Mclass->gpio_get_value(gpio_fd) << (7-j) | tmp;
-        j++;
-        if(j > 7) {
-          j=0;
-          memcpy(buffer+k,&tmp,sizeof(char));
-          k++;
-        }
-        i++;
-        usleep(100);
-      }
-      memcpy(Mclass->IR_buf,buffer,126*sizeof(char));
-      printf("Found IR signal.k = %d",k);
-    }
-  } while(1);
-  free(buffer);
+    	int i = 0;
+    	int j = 0;
+    	int k = 0;
+    	buffer = (char *)memset(buffer,0,301*sizeof(char));
+    	poll(&polls,1,-1);//waiting
+    	if(polls.revents & POLLPRI) { //got it!
+			lseek(gpio_fd,0,SEEK_SET);
+			char tmp = 0;
+			usleep(1500); //anti-interference
+			read(gpio_fd,&c,1);
+			lseek(gpio_fd,0,SEEK_SET);
+			if(c == '1') {//interference
+				continue;
+			}
+			do {
+				read(gpio_fd,&c,1);
+				lseek(gpio_fd,0,SEEK_SET);
+			} while (c == '0');
+			do {
+				read(gpio_fd,&c,1);
+				lseek(gpio_fd,0,SEEK_SET);
+			} while (c == '1');
+			while (i < 2401) { //read for .072 secound (2400*30us)
+				read(gpio_fd,&c,1);
+				lseek(gpio_fd,0,SEEK_SET);
+				tmp = (c == '0') ? 0 : 1 << j | tmp;
+				j++;
+				if(j > 7) {
+					j=0;
+					memcpy(buffer+k,&tmp,sizeof(char));
+					k++;
+				}
+				i++;
+				usleep(30);
+			}
+			memcpy(Mclass->IR_buf,buffer,301*sizeof(char));
+			printf("Found IR signal.\n");
+			char todisplay[602];
+			char * p_display = todisplay;
+			memset(p_display,0,602*sizeof(char));
+			Mclass->ByteToHexStr((const unsigned char*)buffer,p_display,301);
+			std::cout<<todisplay<<std::endl;
+		}
+	} while(1);
+	free(buffer);
 }
 IRReader::~IRReader()
 {
   free(IR_buf);
   gpio_unexport(17);
+}
+void IRReader::ByteToHexStr(const unsigned char* source, char* dest, int sourceLen)  
+{
+	short i;
+	unsigned char highByte, lowByte;
+	for (i = 0; i < sourceLen; i++){
+		highByte = source[i] >> 4;
+		lowByte = source[i] & 0x0f;
+		highByte += 0x30;
+		if (highByte > 0x39)
+			dest[i * 2] = highByte + 0x07;
+		else
+			dest[i * 2] = highByte;
+		lowByte += 0x30;
+		if (lowByte > 0x39)
+			 dest[i * 2 + 1] = lowByte + 0x07;
+		else
+			dest[i * 2 + 1] = lowByte;
+	} 
+	return ;  
 }
