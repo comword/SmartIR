@@ -5,7 +5,6 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-#include "xmlhandler.h"
 #include "pylinker.h"
 #include "IRReader.h"
 
@@ -18,8 +17,8 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <map>
+#include <iostream>
 
-xml_helper *conf;
 pylinker *web;
 IRReader *IR;
 void exit_handler(int s);
@@ -47,19 +46,9 @@ int main(int argc, char *argv[])
 {
   bool if_exit = false;
   bool is_daemon = false;
-  const char *config_path = "undefined";
   //  const char *help_section_default = nullptr;
   const char *help_section_system = "System";
   const arg_handler arg_proc[]={
-    {
-      "--configure","<file path>","Import the configure file.",
-      help_section_system,
-      [&config_path](int num_args, const char **params) -> int {
-        if(num_args < 1) return -1;
-        config_path=params[0];
-        return 1;
-      }
-    },
     {
       "--daemon",nullptr,"Start program background.",
       help_section_system,
@@ -132,11 +121,7 @@ int main(int argc, char *argv[])
   sigemptyset(&sigHandler.sa_mask);
   sigHandler.sa_flags = 0;
   sigaction(SIGINT, &sigHandler, NULL);
-  if (strcmp(config_path,"undefined") == 0)
-  config_path = "config.xml";//Default configure file.
   try {
-    conf=new xml_helper(config_path);
-    conf->load_sys_config();
     web = new pylinker();
   }
   catch (std::runtime_error &e) {
