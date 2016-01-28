@@ -30,5 +30,5 @@ def generate_JWT():
     tmp_claims = claims()
     time = time.time()
     tmp_claims['iat']=time
-    tmp_claims['exp']=time+3600#one hour
+    tmp_claims['exp']=time+3600 #one hour
     encoded = jwt.encode(claims, key, algorithm='HS384')

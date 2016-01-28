@@ -7,6 +7,7 @@
 */
 #include "pylinker.h"
 #include "IRReader.h"
+#include "transmit.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,6 +22,7 @@
 
 pylinker *web;
 IRReader *IR;
+transmit *tran;
 void exit_handler(int s);
 
 namespace {

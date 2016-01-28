@@ -23,7 +23,7 @@ def initWebServer(myport):
             if m_valid_login(request.form['inputUsername'],request.form['inputPassword']):
                 return 'Success!'
             return "Wrong username or wrong password."
-        tmp = request.form['Dummy'] #Generate http 400
+        return 'Bad Request', 400, {'Content-Type': 'text/html'}#Generate http 400
     @app.route('/templates/dashboard.html')
     def send_5(first='无',second='0',third='0',fourth='0'):
         chk_internet = internet_on()
