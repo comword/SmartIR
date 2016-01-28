@@ -21,7 +21,7 @@ public:
   int gpio_set_value(int value_fd, unsigned int value);
   int gpio_get_value(int value_fd);
   static void *wait_for_IR (void * ptr);
-  void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
+  static void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
 private:
   int fd;
   char* IR_buf;

@@ -10,4 +10,6 @@ class transmit
 public:
   transmit();
   virtual ~transmit();
+  void cfmakeraw(struct termios *t);
+	int InitSerial();
 };

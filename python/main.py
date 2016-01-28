@@ -7,7 +7,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 import os,sys
-from flask import Flask, request, send_from_directory, render_template
+from flask import Flask, request, send_from_directory, render_template, redirect
 import urllib2
 sys.path.append(".")
 
@@ -16,6 +16,9 @@ import jwt,dbman
 def initWebServer(myport):
     app = Flask(__name__,static_folder='html',template_folder='html/templates')
     app.root_path = os.getcwd()
+    @app.route('/')
+    def send_7():
+        return redirect("dashboard.html")
     @app.route('/login_action.cgi',methods=['POST', 'GET'])
     def send_6():
         error = None

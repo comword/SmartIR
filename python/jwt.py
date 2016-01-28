@@ -32,3 +32,7 @@ def generate_JWT():
     tmp_claims['iat']=time
     tmp_claims['exp']=time+3600 #one hour
     encoded = jwt.encode(claims, key, algorithm='HS384')
+def renew_JWT(oldone):
+    return 0
+def verify_JWT(jwt):
+    return True
