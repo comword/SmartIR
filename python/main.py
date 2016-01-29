@@ -9,9 +9,11 @@
 import os,sys
 from flask import Flask, request, send_from_directory, render_template, redirect
 import urllib2
+
 sys.path.append(".")
 
 import jwt,dbman
+import mpipe
 
 def initWebServer(myport):
     app = Flask(__name__,static_folder='html',template_folder='html/templates')
@@ -56,7 +58,7 @@ def get_online_client():
     return 0
 def m_valid_login(username,password):
     return True
-def startWebServer():
+def startWebServer(m_pipe):
     initWebServer("5000")
 if __name__ == "__main__":
     initWebServer("5000")

@@ -29,6 +29,8 @@ pylinker::pylinker()
   int res = pthread_create(&tid, &attr, pylinker::run_thread, this);
   if (res)
     throw std::runtime_error(std::string("pylinker::pthread_create() Failed!\n"));
+  if(pipe(m_pipe) < 0)
+    throw std::runtime_error(std::string("pylinker::assert pipe(m_pipe) < 0\n"));
 }
 void * pylinker::run_thread(void *ptr)
 {
@@ -42,7 +44,10 @@ void * pylinker::run_thread(void *ptr)
   if (orgclass->pythonMod == nullptr)
     throw std::runtime_error(std::string("pylinker.cpp::assert pythonMod == nullptr\n"));
   orgclass->StartWeb = PyObject_GetAttrString(orgclass->pythonMod, "startWebServer");
-  PyEval_CallObject(orgclass->StartWeb,nullptr);
+  PyObject *arglist;
+  arglist = Py_BuildValue("(i)", orgclass->m_pipe[1]);
+  PyEval_CallObject(orgclass->StartWeb,arglist);
+  Py_DECREF(arglist);
   PyThreadState_Swap(NULL);
   PyEval_ReleaseLock();
   return 0;
@@ -54,4 +59,8 @@ pylinker::~pylinker()
   PyThreadState_Clear(PyThstate);
   PyThreadState_Delete(PyThstate);
   Py_Finalize();
+}
+int pylinker::m_read_pipe(char* readbuf,int size)
+{
+  return read(m_pipe[0],readbuf,size);
 }

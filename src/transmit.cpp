@@ -19,11 +19,11 @@
 
 transmit::transmit()
 {
-
+	fd = this->InitSerial();
 }
 transmit::~transmit()
 {
-
+  close(fd);
 }
 inline void transmit::cfmakeraw(struct termios *t)
 {
@@ -62,4 +62,23 @@ int transmit::InitSerial()
 //	printf("ss.baud_base:%d\nss.custom_divisor:%d\n",ss.baud_base,ss.custom_divisor);
 	ioctl(u, TIOCSSERIAL, &ss);
 	return u;
+}
+void transmit::do_cycle()
+{
+  for (std::vector<zigBuffer*>::iterator it=wbuffer.begin();it != wbuffer.end();){
+		zigBuffer *tmp = *it;
+		//char todisplay[50];
+		//char * p_display=todisplay;
+		//memset(p_display,0,50*sizeof(char));
+		//ByteToHexStr((const unsigned char*)tmp->buffer,p_display,tmp->length);
+		//std::cout<<p_display<<std::endl;
+		for (int j=0; j < tmp->length; j++){
+			//write(*fd,tmp->buffer+j,1);
+			//tcflush(*fd,TCOFLUSH);
+		}
+		delete tmp->buffer;
+		delete tmp;
+		it = wbuffer.erase(it);
+		usleep(1000);
+	}
 }

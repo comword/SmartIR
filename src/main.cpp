@@ -7,7 +7,7 @@
 */
 #include "pylinker.h"
 #include "IRReader.h"
-#include "transmit.h"
+#include "protocol.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -22,7 +22,7 @@
 
 pylinker *web;
 IRReader *IR;
-transmit *tran;
+IRProtocol *IRP;
 void exit_handler(int s);
 
 namespace {

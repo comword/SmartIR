@@ -5,6 +5,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+#include <vector>
+struct zigBuffer{
+  int id;
+  int length;
+  char* buffer;
+};
 class transmit
 {
 public:
@@ -12,4 +18,8 @@ public:
   virtual ~transmit();
   void cfmakeraw(struct termios *t);
 	int InitSerial();
+  virtual void do_cycle();
+private:
+  int fd;
+  std::vector<zigBuffer*> wbuffer;
 };

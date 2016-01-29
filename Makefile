@@ -92,3 +92,5 @@ $(ODIR)/%.o: $(SRC_DIR)/%.cpp
 clean:
 	rm -rf $(TARGET)
 	rm -rf $(ODIR)
+pymodule:
+	cd python;gcc -fPIC -shared -lpython2.7 -o mpipe.so mpipe.c
