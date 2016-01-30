@@ -8,7 +8,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from jose import jwt
 from jose.exceptions import JWTError
-import time
+from datetime import datetime
+from datetime import timedelta
+
 def key():
     return '!!JWTSecretKeyHere!!'
 def claims():
@@ -17,7 +19,9 @@ def claims():
         'sub': 'SmartIR',
         'exp': '!time!',
         'iat': '!time!',
-        'jti': '!JWTID!',
+        'user': '!user!',
+        'privilage': '!privilage!'
+#        'jti': '!JWTID!',
     }
     return claims
 def headers():
@@ -26,13 +30,38 @@ def headers():
         "alg" : "HS256",
     }
     return headers
-def generate_JWT():
+def generate_JWT(User,Privilage):
     tmp_claims = claims()
-    time = time.time()
+    time = datetime.utcnow()
     tmp_claims['iat']=time
-    tmp_claims['exp']=time+3600 #one hour
+    tmp_claims['exp']=time+timedelta(hours=1) #one hour
+    tmp_claims['user']=User
+    tmp_claims['privilage']=Privilage
     encoded = jwt.encode(claims, key, algorithm='HS384')
-def renew_JWT(oldone):
-    return 0
+    return encoded
+def renew_JWT(old_claims):
+    try:
+        decode = jwt.decode(old_claims, key, algorithms='HS384')
+    except JWTError as err:
+        return "JWTError"
+    if decode['exp'] < datetime.utcnow():# expired
+        return "JWTexpired"
+    return generate_JWT(decode['user'],decode['privilage'])
 def verify_JWT(jwt):
+    try:
+        decode = jwt.decode(jwt, key, algorithms='HS384')
+    except JWTError as err:
+        return False
     return True
+def get_user(jwt):
+    try:
+        decode = jwt.decode(jwt, key, algorithms='HS384')
+    except JWTError as err:
+        return "JWTError"
+    return decode['user']
+def get_privilage(jwt):
+    try:
+        decode = jwt.decode(jwt, key, algorithms='HS384')
+    except JWTError as err:
+        return "JWTError"
+    return decode['privilage']

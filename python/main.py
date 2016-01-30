@@ -12,8 +12,7 @@ import urllib2
 
 sys.path.append(".")
 
-import jwt,dbman
-import mpipe
+import jwt,dbman,callcpp
 
 def initWebServer(myport):
     app = Flask(__name__,static_folder='html',template_folder='html/templates')
@@ -25,8 +24,10 @@ def initWebServer(myport):
     def send_6():
         error = None
         if request.method == 'POST':
-            if m_valid_login(request.form['inputUsername'],request.form['inputPassword']):
-                return 'Success!'
+            user = request.form['inputUsername']
+            if (m_valid_login(user,request.form['inputPassword']) == True):
+                privilage = dbman.get_privilage(user);
+                client_jwt = jwt.generate_JWT(user,privilage)
             return "Wrong username or wrong password."
         return 'Bad Request', 400, {'Content-Type': 'text/html'}#Generate http 400
     @app.route('/templates/dashboard.html')
@@ -34,6 +35,7 @@ def initWebServer(myport):
         chk_internet = internet_on()
         if chk_internet == True:
             first='良好'
+        second = str(callcpp.get_online_client())
         return render_template('dashboard.html', first=first,second=second,third=third,fourth=third)
     @app.route('/<path:filename>')
     def send_1(filename):
@@ -54,11 +56,13 @@ def internet_on():
         return True
     except urllib2.URLError as err: pass
     return False
-def get_online_client():
-    return 0
 def m_valid_login(username,password):
-    return True
+    res = dbman.verify_user(username,password)
+    if (res == "Success."):
+        return True
+    return res
 def startWebServer(m_pipe):
+    callcpp.pipefd = m_pipe
     initWebServer("5000")
 if __name__ == "__main__":
     initWebServer("5000")

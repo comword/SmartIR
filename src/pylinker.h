@@ -15,6 +15,7 @@ public:
   //PyThreadState *get_myThreadState();
   static void * run_thread(void *ptr);
   int m_read_pipe(char* readbuf,int size);
+  int m_write_pipe(char* writebuf,int size);
   virtual ~pylinker();
 private:
   PyObject *pythonMod = nullptr;

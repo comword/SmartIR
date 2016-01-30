@@ -64,3 +64,7 @@ int pylinker::m_read_pipe(char* readbuf,int size)
 {
   return read(m_pipe[0],readbuf,size);
 }
+int pylinker::m_write_pipe(char* writebuf,int size)
+{
+  return write(m_pipe[0],writebuf,size);
+}

@@ -49,6 +49,7 @@ def create_user(username,password):
         return 'Success.'
     return res #user existed
 def get_user_count():
-    return 0
+    db = leveldb.LevelDB(user_db)
+    iter = leveldb.Iterator(db)
 def get_sensors_count():
     return 0
