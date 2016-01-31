@@ -63,6 +63,8 @@ def m_valid_login(username,password):
     return res
 def startWebServer(m_pipe):
     callcpp.pipefd = m_pipe
+    if (dbman.check_dbs() != True):
+        dbman.create_NewDB()
     initWebServer("5000")
 if __name__ == "__main__":
     initWebServer("5000")
