@@ -94,6 +94,11 @@ def initWebServer(myport):
         else:
             response.set_cookie('jwt', renew)
             return response
+    @app.route('/study_IR.cgi',methods=['POST', 'GET'])
+    def send_14():
+        if request.method == 'POST':
+            user,priv = proc_jwt(request.cookies.get('jwt'))
+        return 'Bad Request', 400, {'Content-Type': 'text/html'}
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
@@ -114,6 +119,8 @@ def proc_jwt(cli_jwt):
     if (user == 'JWTError' or priv == 'JWTError'):
         return 'JWTError','JWTError'
     return user,priv
+def start_IR_learn(data):
+    return True
 def startWebServer(m_pipe):
     callcpp.pipefd = m_pipe
     if (dbman.check_dbs() != True):
