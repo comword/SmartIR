@@ -26,6 +26,8 @@ def create_NewDB():
     password = hashlib.sha1(password).hexdigest();
     password = hashlib.sha1(password).hexdigest();
     db.Put('admin', password)
+    db = leveldb.LevelDB(privilage_db)
+    db.Put('admin', 'admin')
     return 'Success.'
 def verify_user(username,password):
     db = leveldb.LevelDB(user_db)
@@ -43,7 +45,7 @@ def get_privilage(username):
     try:
         res = db.Get(username)
     except KeyError as err:
-        res = "User error:" + err
+        res = "User error: No privilage."
         print res
     return res
 def create_user(username,password):
