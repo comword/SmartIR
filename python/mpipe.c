@@ -16,7 +16,7 @@ PyObject *py_writepipe(PyObject* self, PyObject* args)
   char * content;
   if (!PyArg_ParseTuple(args, "is", &x,content,&size))
     return NULL;
-  size = strlen(constent);
+  size = strlen(content);
   if (content != NULL && size != 0)
     res = write(x,content,size);
   return Py_BuildValue("i", res);
