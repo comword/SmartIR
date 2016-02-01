@@ -39,14 +39,16 @@ def generate_JWT(User,Privilage):
     tmp_claims['privilage']=Privilage
     encoded = jwt.encode(tmp_claims, key(), algorithm='HS384')
     return encoded
-def renew_JWT(old_claims):
+def renew_JWT(m_jwt):
     try:
-        decode = jwt.decode(old_claims, key, algorithms='HS384')
+        decode = jwt.decode(m_jwt, key, algorithms='HS384')
     except JWTError as err:
-        return "JWTError"
+        return 'Error'
     if decode['exp'] < datetime.utcnow():# expired
-        return "JWTexpired"
-    return generate_JWT(decode['user'],decode['privilage'])
+        return 'Error'
+    if decode['exp']-timedelta(minutes=20) < datetime.utcnow():
+        return generate_JWT(decode['user'],decode['privilage'])
+    return 'NotNess' #not necessary
 def verify_JWT(m_jwt):
     try:
         decode = jwt.decode(m_jwt, key(), algorithms='HS384')

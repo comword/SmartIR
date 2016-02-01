@@ -19,9 +19,15 @@ def initWebServer(myport):
     app.root_path = os.getcwd()
     @app.route('/')
     def send_1():
-        return redirect("dashboard.html")
-    @app.route('/login_action.cgi',methods=['POST', 'GET'])
+        return redirect("login.html")
+    @app.route('/login.html')
     def send_2():
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return send_from_directory(app.static_folder, 'login.html')
+        return response
+    @app.route('/login_action.cgi',methods=['POST', 'GET'])
+    def send_3():
         error = None
         if request.method == 'POST':
             user = request.form['inputUsername']
@@ -34,7 +40,7 @@ def initWebServer(myport):
             return "Wrong username or wrong password."
         return 'Bad Request', 400, {'Content-Type': 'text/html'}#Generate http 400
     @app.route('/templates/dashboard.html')
-    def send_3(first='无',second='0',third='0',fourth='0'):
+    def send_4(first='无',second='0',third='0',fourth='0'):
         user,priv = proc_jwt(request.cookies.get('jwt'))
         if (priv == 'JWTError'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
@@ -44,39 +50,50 @@ def initWebServer(myport):
         second = str(callcpp.get_online_client())
         return render_template('dashboard.html', first=first,second=second,third=third,fourth=third)
     @app.route('/templates/IRControl.html')
-    def send_4():
+    def send_5():
         user,priv = proc_jwt(request.cookies.get('jwt'))
         if (priv == 'JWTError'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         return render_template('IRControl.html')
     @app.route('/templates/Usermanager.html')
-    def send_5():
+    def send_6():
         user,priv = proc_jwt(request.cookies.get('jwt'))
         if (priv == 'JWTError'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         return render_template('Usermanager.html')
     @app.route('/<path:filename>')
-    def send_6(filename):
+    def send_7(filename):
         return send_from_directory(app.static_folder, filename)
     @app.route('/js/<path:filename>')
-    def send_7(filename):
+    def send_8(filename):
         return send_from_directory(app.static_folder+'/js', filename)
     @app.route('/css/<path:filename>')
-    def send_8(filename):
+    def send_9(filename):
         return send_from_directory(app.static_folder+'/css', filename)
     @app.route('/fonts/<path:filename>')
-    def send_9(filename):
+    def send_10(filename):
         return send_from_directory(app.static_folder+'/fonts', filename)
     @app.route('/get_user_info.cgi',methods=['GET'])
-    def send_10():
+    def send_11():
         user,priv = proc_jwt(request.cookies.get('jwt'))
         res='{"User": "'+user+'","Priv": "'+priv+'"}'
         return res,200,{'Content-Type': 'application/json'}
     @app.route('/logout.cgi',methods=['GET'])
-    def send_11():
+    def send_12():
         response = make_response(redirect('login.html'))
         response.set_cookie('jwt', '')
         return response
+    @app.route('/renew_jwt.cgi',methods=['GET'])
+    def send_13():
+        response = make_response()
+        renew = myjwt.renew_JWT(m_jwt)
+        if (renew == 'Error'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+        if (renew == 'NotNess'):
+            return ''
+        else:
+            response.set_cookie('jwt', renew)
+            return response
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
