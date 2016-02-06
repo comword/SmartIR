@@ -7,7 +7,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 import os
-import leveldb
+import plyvel
 import hashlib
 from datetime import datetime
 
@@ -16,89 +16,86 @@ user_db = root_path + '/users.db'
 log_db = root_path + '/logs.db'
 privilage_db = root_path + '/priv.db'
 IRs_db = root_path + '/IRs.db'
-def create_NewDB():
-    leveldb.LevelDB(log_db)
-    leveldb.LevelDB(privilage_db)
-    leveldb.LevelDB(IRs_db)
-    #Admin User
-    db = leveldb.LevelDB(user_db)
+def check_dbs():
+    plyvel.DB(user_db, create_if_missing=True)
+    plyvel.DB(log_db, create_if_missing=True)
+    plyvel.DB(privilage_db, create_if_missing=True)
+    plyvel.DB(IRs_db, create_if_missing=True)
+def reset_admin_user():
+    db = plyvel.DB(user_db, create_if_missing=True)
     password = 'admin'
     password = hashlib.sha1(password).hexdigest();
     password = hashlib.sha1(password).hexdigest();
-    db.Put('admin', password)
-    db = leveldb.LevelDB(privilage_db)
-    db.Put('admin', 'admin')
-    return 'Success.'
+    db.put('admin', password)
+    db = plyvel.DB(privilage_db, create_if_missing=True)
+    db.put('admin', 'admin')
 def verify_user(username,password):
-    db = leveldb.LevelDB(user_db)
+    db = plyvel.DB(user_db)
     pw_chk = None
     pwd = hashlib.sha1(password).hexdigest();
-    try:
-        pw_chk = db.Get(username)
-    except KeyError as err:
+    pw_chk = db.get(username.encode('utf8'))
+    if pw_chk == None:
         return 'User not exist.'
     if pwd == pw_chk:
         return 'Success.'
     return 'Password wrong.'
 def get_privilage(username):
-    db = leveldb.LevelDB(privilage_db)
-    try:
-        res = db.Get(username)
-    except KeyError as err:
+    db = plyvel.DB(privilage_db)
+    res = db.get(username.encode('utf8'))
+    if res == None:
         res = "User error: No privilage."
-        print res
     return res
 def create_user(username,password):
-    db = leveldb.LevelDB(user_db)
-    try:
-        res = db.Get(username)
-    except KeyError as err:
+    db = plyvel.DB(user_db)
+    res = db.get(username.encode('utf8'))
+    if res == None:
         pwd = hashlib.sha1(password).hexdigest();
-        db.Put(username,pwd)
+        db.put(username,pwd)
         return 'Success.'
-    return res #user existed
+    else:
+        return res
 def get_user_count():
-    db = leveldb.LevelDB(user_db)
-    iter = leveldb.Iterator(db)
-    iter.First()
+    db = plyvel.DB(user_db)
     count = 0
-    while True:
-        if (iter.Validate()):
-            count = count +1
-            iter.Next()
-        else:
-            break
+    for key, value in db:
+        count = count+1
     return count
 def get_IRs_count():
-    db = leveldb.LevelDB(IRs_db)
-    iter = leveldb.Iterator(db)
-    iter.First()
+    db = plyvel.DB(IRs_db)
     count = 0
-    while True:
-        if (iter.Validate()):
-            count = count +1
-            iter.Next()
-        else:
-            break
+    for key, value in db:
+        count = count+1
     return count
 def make_log(log):
-    db = leveldb.LevelDB(log_db)
+    db = plyvel.DB(log_db)
     time = str(datetime.utcnow())
-    db.Put(time,log)
+    db.put(time,log)
 def get_log(time):
-    db = leveldb.LevelDB(log_db)
-    try:
-        log = db.Get(time)
+    db = plyvel.DB(log_db)
+    log = db.get(time.encode('utf8'))
+    if log != None:
         return log
-    except KeyError as err:
+    else:
         return 'Log not exist.'
 def get_log_range(time_start,time_end):
-    db = leveldb.LevelDB(log_db)
-    res_list = list(db.RangeIter(key_from = time_start, key_to = time_end))
-    return res_list
-def check_dbs():
-    if os.path.exists(user_db):
-        if os.path.exists(log_db):
-            if os.path.exists(privilage_db):
-                if os.path.exists(IRs_db):
-                    return True
+    db = plyvel.DB(log_db)
+    res_dict = {}
+    for key, value in db.iterator(start=time_start, stop=time_end):
+        res_dict[key]=value
+    return res_dict
+def get_IR_dict(start,num):
+    db = plyvel.DB(IRs_db)
+    i = 0
+    res_dict = {}
+    it = db.iterator(include_value=False)
+    if start != None:
+        it.seek(start)
+    else:
+        it.seek_to_start()
+    while True:
+        k = next(it)
+        res_dict[k]=db.get(k)
+        i=i+1
+        if (i > num):
+            break
+    return res_dict

@@ -25,7 +25,11 @@ def initWebServer(myport):
         user,priv = proc_jwt(request.cookies.get('jwt'))
         if (priv == 'JWTError'):
             return send_from_directory(app.static_folder, 'login.html')
-        return response
+        if (priv == 'JWSError'):
+            response = make_response('login.html')
+            response.set_cookie('jwt', '')
+            return response
+        return redirect("dashboard.html")
     @app.route('/login_action.cgi',methods=['POST', 'GET'])
     def send_3():
         error = None
@@ -98,8 +102,29 @@ def initWebServer(myport):
     def send_14():
         if request.method == 'POST':
             user,priv = proc_jwt(request.cookies.get('jwt'))
+            if (priv == 'JWTError'):
+                return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
-    app.run(host="0.0.0.0",port=int(myport),threaded=True)
+    @app.route('/get_IR_recode.cgi')
+    def send_15():
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+        st = request.form['rangeL']
+        ed = request.form['rangeH']
+    @app.route('/go_IR_action.cgi',methods=['POST', 'GET'])
+    def send_16():
+        if request.method == 'POST':
+            user,priv = proc_jwt(request.cookies.get('jwt'))
+            if (priv == 'JWTError'):
+                return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+            action = request.form['action']
+            operator = {'send':IR_action_Send,'modify':IR_action_Modify,'remove':IR_action_Remove}
+            res = operator.get(action)(request.form['data'])
+            respond = make_response(res)
+            return respond
+        return 'Bad Request', 400, {'Content-Type': 'text/html'}
+    app.run(host="0.0.0.0",port=int(myport),debug=True,threaded=True)
 def internet_on():
     try:
         response=urllib2.urlopen('http://www.baidu.com',timeout=1)
@@ -112,21 +137,27 @@ def m_valid_login(username,password):
         return True
     return res
 def proc_jwt(cli_jwt):
-    if (cli_jwt == None):
+    if (cli_jwt == None or cli_jwt == ''):
         return 'JWTError','JWTError'
     user = myjwt.get_user(cli_jwt)
     priv = myjwt.get_privilage(cli_jwt)
     if (user == 'JWTError' or priv == 'JWTError'):
         return 'JWTError','JWTError'
+    if (user == 'JWSError' or priv == 'JWSError'):
+        return 'JWSError','JWSError'
     return user,priv
 def start_IR_learn(data):
     return True
+def IR_action_Send(data):
+    return True
+def IR_action_Modify(data):
+    return True
+def IR_action_Remove(data):
+    return True
 def startWebServer(m_pipe):
     callcpp.pipefd = m_pipe
-    if (dbman.check_dbs() != True):
-        dbman.create_NewDB()
+    dbman.check_dbs()
     initWebServer("5000")
 if __name__ == "__main__":
-    if (dbman.check_dbs() != True):
-        dbman.create_NewDB()
+    dbman.check_dbs()
     initWebServer("5000")
