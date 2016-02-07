@@ -16,11 +16,15 @@ user_db = root_path + '/users.db'
 log_db = root_path + '/logs.db'
 privilage_db = root_path + '/priv.db'
 IRs_db = root_path + '/IRs.db'
+#"IRID":"NickName"
+IR_detail_db = root_path +'/IR_detail.db'
+#"IRID":"IR_Signal"
 def check_dbs():
     plyvel.DB(user_db, create_if_missing=True)
     plyvel.DB(log_db, create_if_missing=True)
     plyvel.DB(privilage_db, create_if_missing=True)
     plyvel.DB(IRs_db, create_if_missing=True)
+    plyvel.DB(IR_detail_db, create_if_missing=True)
 def reset_admin_user():
     db = plyvel.DB(user_db, create_if_missing=True)
     password = 'admin'

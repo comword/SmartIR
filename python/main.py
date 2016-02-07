@@ -9,6 +9,7 @@
 import os,sys
 from flask import Flask, request, send_from_directory, render_template, redirect, make_response
 import urllib2
+from json import  *
 
 sys.path.append(".")
 
@@ -111,7 +112,10 @@ def initWebServer(myport):
         if (priv == 'JWTError'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         st = request.form['rangeL']
-        ed = request.form['rangeH']
+        num = request.form['num']
+        res = dbman.get_IR_dict(st,num)
+        response = make_response(JSONEncoder().encode(res))
+        return respond
     @app.route('/go_IR_action.cgi',methods=['POST', 'GET'])
     def send_16():
         if request.method == 'POST':
@@ -120,7 +124,7 @@ def initWebServer(myport):
                 return 'Unauthorized', 401, {'Content-Type': 'text/html'}
             action = request.form['action']
             operator = {'send':IR_action_Send,'modify':IR_action_Modify,'remove':IR_action_Remove}
-            res = operator.get(action)(request.form['data'])
+            res = operator.get(action)(request.form['m_data'])
             respond = make_response(res)
             return respond
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
