@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
     std::cerr<<e.what()<<std::endl;
     exit_handler(999);
   }
+  char *pipe_buffer = (char *)malloc(1024*sizeof(char));
   try {
     IR = new IRReader();
   }
@@ -137,8 +138,17 @@ int main(int argc, char *argv[])
     std::cerr<<e.what()<<std::endl;
     std::cerr<<"IR module won't work!"<<std::endl;
   }
+  try {
+    IRP = new IRProtocol(pipe_buffer);
+  }
+  catch (std::runtime_error &e) {
+    std::cerr<<e.what()<<std::endl;
+    std::cerr<<"IR module won't work!"<<std::endl;
+  }
   do {
     sleep(1);
+    web->m_read_pipe(pipe_buffer,sizeof(pipe_buffer));
+    IRP->do_cycle();
   } while (!if_exit);
 }
 

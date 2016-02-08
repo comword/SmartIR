@@ -19,7 +19,7 @@
 
 transmit::transmit()
 {
-	fd = this->InitSerial();
+	//fd = this->InitSerial();
 }
 transmit::~transmit()
 {

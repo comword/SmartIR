@@ -56,6 +56,8 @@ pylinker::~pylinker()
 {
   PyEval_AcquireLock();
   PyThreadState_Swap(NULL);
+  PyThreadState_Clear(myThreadState);
+  PyThreadState_Clear(myThreadState);
   PyThreadState_Clear(PyThstate);
   PyThreadState_Delete(PyThstate);
   Py_Finalize();
@@ -67,4 +69,8 @@ int pylinker::m_read_pipe(char* readbuf,int size)
 int pylinker::m_write_pipe(char* writebuf,int size)
 {
   return write(m_pipe[0],writebuf,size);
+}
+PyInterpreterState* pylinker::get_PyInterpreterState()
+{
+  return interpreterState;
 }

@@ -17,6 +17,8 @@ public:
   int m_read_pipe(char* readbuf,int size);
   int m_write_pipe(char* writebuf,int size);
   virtual ~pylinker();
+  PyInterpreterState* get_PyInterpreterState();
+
 private:
   PyObject *pythonMod = nullptr;
   PyObject *StartWeb = nullptr;
@@ -25,3 +27,5 @@ private:
   PyInterpreterState* interpreterState;
   int m_pipe[2];
 };
+//only one class
+extern pylinker *web;
