@@ -9,7 +9,7 @@
 import os,sys
 from flask import Flask, request, send_from_directory, render_template, redirect, make_response
 import urllib2
-from json import  *
+from json import *
 
 sys.path.append(".")
 

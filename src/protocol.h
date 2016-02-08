@@ -19,6 +19,7 @@ public:
 private:
   char* pipe_buffer = nullptr;
   PyThreadState *myThreadState;
+  PyObject *pythonMod, *pyProc;
 };
 //only one class
 extern IRProtocol *IRP;
