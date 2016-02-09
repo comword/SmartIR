@@ -6,6 +6,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #include "IRReader.h"
+#include "pylinker.h"
 
 #include <fstream>
 #include <errno.h>
@@ -27,6 +28,7 @@ IRReader::IRReader()
 }
 void IRReader::start_learn_IR(int IRID)
 {
+  this->now_IRID = IRID;
   if(gpio_export(IR_GPIO) < 0)
   throw std::runtime_error(std::string("IRReader::assert gpio_export(IR_GPIO) < 0\n"));
   if(gpio_set_dir(IR_GPIO,0) < 0)
@@ -231,5 +233,9 @@ void IRReader::ByteToHexStr(const unsigned char* source, char* dest, int sourceL
 }
 void IRReader::finish_learn_callback()
 {
-
+  if(now_IRID != -1){
+    char str[10];
+    sprintf(str,"%d", now_IRID);
+    web -> write_database("/IR_detail.db",std::string(str),std::string(IR_buf));
+  }
 }

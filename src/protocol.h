@@ -9,6 +9,7 @@
 
 #include <python2.7/Python.h>
 #include <map>
+#include <string>
 
 using DictsMap = std::map<std::string,std::string>;
 class IRProtocol : public transmit

@@ -10,7 +10,6 @@
 #include "IRReader.h"
 
 #include <stdexcept>
-#include <string>
 #include <stdlib.h>
 
 IRProtocol::IRProtocol(char* p_buffer) :
@@ -78,7 +77,7 @@ DictsMap* IRProtocol::Proc_PyDict(PyObject* pyDict)
 /* 1.Python class to cpp class protocol
  * a:division,b:action,c:key,d:(value)data
  * To PY:action:{a:read database,b:write database}
- * To CPP:action:{a:send ir signal,b:start learn ir signal}
+ * To CPP:action:{a:send ir signal,b:start learn ir signal,c:get online client}
  */
 void IRProtocol::action_switch(DictsMap* dicts)
 {
@@ -87,7 +86,7 @@ void IRProtocol::action_switch(DictsMap* dicts)
     case 'a':
     break;
     case 'b':
-      int IRID = atoi((*dicts)["b"].c_str());
+      int IRID = atoi((*dicts)["c"].c_str());
       IR->start_learn_IR(IRID);
     break;
   }

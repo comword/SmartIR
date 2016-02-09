@@ -53,7 +53,8 @@ def initWebServer(myport):
         if chk_internet == True:
             first='良好'
         second = str(callcpp.get_online_client())
-        return render_template('dashboard.html', first=first,second=second,third=third,fourth=third)
+        fourth = str(dbman.get_user_count())
+        return render_template('dashboard.html', first=first,second=second,third=third,fourth=fourth)
     @app.route('/templates/IRControl.html')
     def send_5():
         user,priv = proc_jwt(request.cookies.get('jwt'))
@@ -105,6 +106,7 @@ def initWebServer(myport):
             user,priv = proc_jwt(request.cookies.get('jwt'))
             if (priv == 'JWTError'):
                 return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+            IRID = request.form['IRID']
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
     @app.route('/get_IR_recode.cgi')
     def send_15():
@@ -128,7 +130,10 @@ def initWebServer(myport):
             respond = make_response(res)
             return respond
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
-    app.run(host="0.0.0.0",port=int(myport),debug=True,threaded=True)
+    @app.route('/get_user_list.cgi')
+    def send_17():
+        return ''
+    app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
         response=urllib2.urlopen('http://www.baidu.com',timeout=1)
@@ -150,7 +155,11 @@ def proc_jwt(cli_jwt):
     if (user == 'JWSError' or priv == 'JWSError'):
         return 'JWSError','JWSError'
     return user,priv
-def start_IR_learn(data):
+def start_IR_learn(IRID):
+    m_dic={}
+    m_dic['b']="b"
+    m_dic["c"]=IRID
+    callcpp.m_write(m_dic)
     return True
 def IR_action_Send(data):
     return True
@@ -162,6 +171,10 @@ def startWebServer(m_pipe):
     callcpp.pipefd = m_pipe
     dbman.check_dbs()
     initWebServer("5000")
+def rd_database(dbname,key):
+    return dbman.read_database(dbname,key)
+def we_database(dbname,key,value):
+    return dbman.write_database(dbname,key,value)
 if __name__ == "__main__":
     dbman.check_dbs()
     initWebServer("5000")

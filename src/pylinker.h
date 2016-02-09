@@ -6,6 +6,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #include <python2.7/Python.h>
+#include <string>
 
 class xml_helper;
 class pylinker
@@ -18,7 +19,8 @@ public:
   int m_write_pipe(char* writebuf,int size);
   virtual ~pylinker();
   PyInterpreterState* get_PyInterpreterState();
-
+  void write_database(std::string dbname,std::string key,std::string value);
+  std::string read_database(std::string dbname,std::string key);
 private:
   PyObject *pythonMod = nullptr;
   PyObject *StartWeb = nullptr;

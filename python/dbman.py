@@ -103,3 +103,10 @@ def get_IR_dict(start,num):
         if (i > num):
             break
     return res_dict
+def write_database(dbname,key,value):
+    db = plyvel.DB(root_path + dbname)
+    db.put(key,value)
+def read_database(dbname,key):
+    db = plyvel.DB(root_path + dbname)
+    res = db.get(key)
+    return res

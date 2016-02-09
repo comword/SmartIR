@@ -27,5 +27,6 @@ public:
 private:
   int fd;
   char* IR_buf;
+  int now_IRID = -1;
 };
 extern IRReader *IR;
