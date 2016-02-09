@@ -8,7 +8,9 @@
 #include "transmit.h"
 
 #include <python2.7/Python.h>
+#include <map>
 
+using DictsMap = std::map<std::string,std::string>;
 class IRProtocol : public transmit
 {
 public:
@@ -16,6 +18,8 @@ public:
   virtual ~IRProtocol();
   void do_cycle();
   void set_pipe_buffer(char* p_buffer);
+  DictsMap* Proc_PyDict(PyObject* pyValue);
+  void action_switch(DictsMap* dicts);
 private:
   char* pipe_buffer = nullptr;
   PyThreadState *myThreadState;

@@ -7,9 +7,11 @@
 */
 #include "protocol.h"
 #include "pylinker.h"
+#include "IRReader.h"
 
 #include <stdexcept>
 #include <string>
+#include <stdlib.h>
 
 IRProtocol::IRProtocol(char* p_buffer) :
 transmit(),
@@ -43,11 +45,50 @@ void IRProtocol::do_cycle()
     arglist = Py_BuildValue("(s)", pipe_buffer);
     pResult = PyEval_CallObject(pyProc,arglist);
     if (pResult != nullptr){
-      
+      PyObject* ptmp = PyList_GetItem(pResult,0);
+      const char* stmp = "";
+      PyArg_Parse(ptmp, "s", stmp);
+      if(strcmp(stmp, "conflicted!"))
+        throw std::runtime_error(std::string("strcmp(stmp, \"conflicted!\")\n"));
+      else if(strcmp(stmp, "final!")){
+        PyObject* pDict = PyList_GetItem(pResult,1);
+        DictsMap* m_map = Proc_PyDict(pDict);
+        delete m_map;
+      }
     }
     Py_DECREF(arglist);
     PyThreadState_Swap(NULL);
     PyEval_ReleaseLock();
   }
   transmit::do_cycle();
+}
+//convert python dictionary to cpp std::map
+DictsMap* IRProtocol::Proc_PyDict(PyObject* pyDict)
+{
+  DictsMap* m_map = new DictsMap;
+  PyObject *key_dict = PyDict_Keys(pyDict);
+  Py_ssize_t len = PyDict_Size(pyDict);
+  for(Py_ssize_t i=0; i<len; ++i){
+    PyObject* key = PyList_GetItem(key_dict, i);
+    PyObject *value = PyDict_GetItem(pyDict, key);
+    m_map->insert(std::pair<std::string,std::string>(PyString_AsString(key),PyString_AsString(value)));
+  }
+  return m_map;
+}
+/* 1.Python class to cpp class protocol
+ * a:division,b:action,c:key,d:(value)data
+ * To PY:action:{a:read database,b:write database}
+ * To CPP:action:{a:send ir signal,b:start learn ir signal}
+ */
+void IRProtocol::action_switch(DictsMap* dicts)
+{
+  char action = *((*dicts)["b"].c_str());
+  switch (action){
+    case 'a':
+    break;
+    case 'b':
+      int IRID = atoi((*dicts)["b"].c_str());
+      IR->start_learn_IR(IRID);
+    break;
+  }
 }

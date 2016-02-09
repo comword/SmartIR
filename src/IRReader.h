@@ -22,6 +22,8 @@ public:
   int gpio_get_value(int value_fd);
   static void *wait_for_IR (void * ptr);
   static void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
+  void start_learn_IR(int IRID);
+  void finish_learn_callback();
 private:
   int fd;
   char* IR_buf;
