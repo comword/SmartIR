@@ -20,7 +20,10 @@ def initWebServer(myport):
     app.root_path = os.getcwd()
     @app.route('/')
     def send_1():
-        return redirect("login.html")
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return redirect("login.html")
+        return redirect("dashboard.html")
     @app.route('/login.html')
     def send_2():
         user,priv = proc_jwt(request.cookies.get('jwt'))
@@ -91,8 +94,11 @@ def initWebServer(myport):
         return response
     @app.route('/renew_jwt.cgi',methods=['GET'])
     def send_13():
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         response = make_response()
-        renew = myjwt.renew_JWT(m_jwt)
+        renew = myjwt.renew_JWT(request.cookies.get('jwt'))
         if (renew == 'Error'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         if (renew == 'NotNess'):
@@ -113,8 +119,8 @@ def initWebServer(myport):
         user,priv = proc_jwt(request.cookies.get('jwt'))
         if (priv == 'JWTError'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
-        st = request.form['rangeL']
-        num = request.form['num']
+        st = request.args['rangeL']
+        num = request.args['num']
         res = dbman.get_IR_dict(st,num)
         response = make_response(JSONEncoder().encode(res))
         return respond
@@ -132,11 +138,32 @@ def initWebServer(myport):
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
     @app.route('/get_user_list.cgi')
     def send_17():
+        #{ID:username}
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+        num = request.args['num']
+        st = request.args['start']
+        res = dbman.get_user_list(st,num)
+        return JSONEncoder().encode(res),200,{'Content-Type': 'application/json'}
+    @app.route('/get_IR_learn_proc.cgi')
+    def send_18():
+        res = callcpp.m_read()
         return ''
+    @app.route('/get_priv_list.cgi')
+    def send_19():
+        #{username:privilage}
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+        num = request.args['num']
+        st = request.args['start']
+        res = dbman.get_priv_list(st,num)
+        return JSONEncoder().encode(res),200,{'Content-Type': 'application/json'}
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
-        response=urllib2.urlopen('http://www.baidu.com',timeout=1)
+        response = urllib2.urlopen('http://www.baidu.com',timeout=1)
         return True
     except urllib2.URLError as err: pass
     return False

@@ -97,10 +97,13 @@ def get_IR_dict(start,num):
     else:
         it.seek_to_start()
     while True:
-        k = next(it)
-        res_dict[k]=db.get(k)
-        i=i+1
-        if (i > num):
+        try:
+            k = next(it)
+            res_dict[k]=db.get(k)
+            i=i+1
+            if (i > num):
+                break
+        except IteratorInvalidError as err:
             break
     return res_dict
 def write_database(dbname,key,value):
@@ -110,3 +113,41 @@ def read_database(dbname,key):
     db = plyvel.DB(root_path + dbname)
     res = db.get(key)
     return res
+def get_user_list(start,num):
+    db = plyvel.DB(user_db)
+    i = 0
+    res_dict = {}
+    it = db.iterator(include_value=False)
+    if start != "None":
+        it.seek(start)
+    else:
+        it.seek_to_start()
+    while True:
+        try:
+            k = next(it)
+            res_dict[i]=k
+            i=i+1
+            if (i > num):
+                break
+        except StopIteration as err:
+            break
+    return res_dict
+def get_priv_list(start,num):
+    db = plyvel.DB(privilage_db)
+    i = 0
+    res_dict = {}
+    it = db.iterator(include_value=False)
+    if start != "None":
+        it.seek(start)
+    else:
+        it.seek_to_start()
+    while True:
+        try:
+            k = next(it)
+            res_dict[k] = db.get(k)
+            i=i+1
+            if (i > num):
+                break
+        except StopIteration as err:
+            break
+    return res_dict
