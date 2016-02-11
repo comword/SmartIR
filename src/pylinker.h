@@ -21,6 +21,7 @@ public:
   PyInterpreterState* get_PyInterpreterState();
   void write_database(std::string dbname,std::string key,std::string value);
   std::string read_database(std::string dbname,std::string key);
+  int write_IR_detail(int IRID,std::string value);
 private:
   PyObject *pythonMod = nullptr;
   PyObject *StartWeb = nullptr;

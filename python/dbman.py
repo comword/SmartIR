@@ -10,21 +10,19 @@ import os
 import plyvel
 import hashlib
 from datetime import datetime
+from json import *
 
 root_path = os.getcwd()+'/datas'
 user_db = root_path + '/users.db'
 log_db = root_path + '/logs.db'
 privilage_db = root_path + '/priv.db'
 IRs_db = root_path + '/IRs.db'
-#"IRID":"NickName"
-IR_detail_db = root_path +'/IR_detail.db'
-#"IRID":"IR_Signal"
+#"IRID":"{name:NickName,room:RoomID,sig:IR_Signal}"
 def check_dbs():
     plyvel.DB(user_db, create_if_missing=True)
     plyvel.DB(log_db, create_if_missing=True)
     plyvel.DB(privilage_db, create_if_missing=True)
     plyvel.DB(IRs_db, create_if_missing=True)
-    plyvel.DB(IR_detail_db, create_if_missing=True)
 def reset_admin_user():
     db = plyvel.DB(user_db, create_if_missing=True)
     password = 'admin'
@@ -99,11 +97,12 @@ def get_IR_dict(start,num):
     while True:
         try:
             k = next(it)
-            res_dict[k]=db.get(k)
+            tmp_d=json.loads(db.get(k))
+            res_dict[k]=tmp_d["name"]
             i=i+1
             if (i > num):
                 break
-        except IteratorInvalidError as err:
+        except StopIteration as err:
             break
     return res_dict
 def write_database(dbname,key,value):
@@ -158,4 +157,14 @@ def change_user_pass(username,new_password):
         return "User not exist."
     new_password = hashlib.sha1(new_password).hexdigest();
     db.put(username,new_password)
+    return "Success."
+def write_IR_detail(IRID,det):
+    db = plyvel.DB(IRs_db)
+    data = db.get(str(IRID))
+    if (data == None):
+        return "IRID not exist."
+    m_dict = json.loads(data)
+    m_dict["sig"] = det
+    tmp = JSONEncoder().encode(m_dict)
+    db.put(str(IRID),tmp)
     return "Success."

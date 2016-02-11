@@ -113,6 +113,10 @@ def initWebServer(myport):
             if (priv == 'JWTError'):
                 return 'Unauthorized', 401, {'Content-Type': 'text/html'}
             IRID = request.form['IRID']
+            m_dict={}
+            m_dict["b"]="b"
+            m_dict["c"]=int(IRID)
+            callcpp.m_write(JSONEncoder().encode(m_dict))
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
     @app.route('/get_IR_recode.cgi')
     def send_15():
@@ -169,13 +173,13 @@ def initWebServer(myport):
             u_name = request.form['username']
             oripass = request.form['oripass']
             newpass = request.form['newpass']
-            if ((user != u_name) and (priv != "admin"))
+            if ((user != u_name) and (priv != "admin")):
                 return 'Privilage Error', 400, {'Content-Type': 'text/html'}
-            if (dbman.verify_user(u_name,oripass) != "Success.")
+            if (dbman.verify_user(u_name,oripass) != "Success."):
                 return 'Original password wrong', 400, {'Content-Type': 'text/html'}
-            if (dbman.change_user_pass(u_name,newpass) == "Success.")
+            if (dbman.change_user_pass(u_name,newpass) == "Success."):
                 respond = make_response("Success.")
-                if (u_name == user) #revoke jwt
+                if (u_name == user): #revoke jwt
                     respond = make_response('Relogin.')
                     respond.set_cookie('jwt', '')
                 return respond
@@ -222,6 +226,12 @@ def rd_database(dbname,key):
     return dbman.read_database(dbname,key)
 def we_database(dbname,key,value):
     return dbman.write_database(dbname,key,value)
+def we_IR_detail(IRID,value):
+    res = dbman.write_IR_detail(IRID,value)
+    if(res == "IRID not exist."):
+        return 1
+    elif(res == "Success."):
+        return 0
 if __name__ == "__main__":
     dbman.check_dbs()
     initWebServer("5000")

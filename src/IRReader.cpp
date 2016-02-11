@@ -17,7 +17,6 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <poll.h>
-#include <iostream>
 #include <sched.h>
 
 #define IR_GPIO 17
@@ -196,11 +195,11 @@ void *IRReader::wait_for_IR (void * ptr)
     }
     memcpy(Mclass->IR_buf,buffer,301*sizeof(char));
     printf("Found IR signal.\n");
-    char todisplay[602];
-    char * p_display = todisplay;
-    memset(p_display,0,602*sizeof(char));
-    Mclass->ByteToHexStr((const unsigned char*)buffer,p_display,301);
-    std::cout<<todisplay<<std::endl;
+    //char todisplay[602];
+    //char * p_display = todisplay;
+    //memset(p_display,0,602*sizeof(char));
+    //Mclass->ByteToHexStr((const unsigned char*)buffer,p_display,301);
+    //std::cout<<todisplay<<std::endl;
   }
   free(buffer);
   Mclass->finish_learn_callback();
@@ -234,8 +233,6 @@ void IRReader::ByteToHexStr(const unsigned char* source, char* dest, int sourceL
 void IRReader::finish_learn_callback()
 {
   if(now_IRID != -1){
-    char str[10];
-    sprintf(str,"%d", now_IRID);
-    web -> write_database("/IR_detail.db",std::string(str),std::string(IR_buf));
+    web -> write_IR_detail(now_IRID,std::string(IR_buf));
   }
 }

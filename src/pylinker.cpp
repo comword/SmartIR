@@ -100,3 +100,18 @@ std::string pylinker::read_database(std::string dbname,std::string key)
   PyEval_ReleaseLock();
   return std::string(m_str);
 }
+int pylinker::write_IR_detail(int IRID,std::string value)
+{
+  PyEval_AcquireLock();
+  PyThreadState_Swap(myThreadState);
+  PyObject *we_IR_detail,*arglist,*res;
+  arglist = Py_BuildValue("(is)", IRID,value.c_str());
+  we_IR_detail = PyObject_GetAttrString(pythonMod, "we_IR_detail");
+  res = PyEval_CallObject(we_IR_detail,arglist);
+  int result;
+  PyArg_Parse(res, "i", &result);
+  Py_DECREF(arglist);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
+  return result;
+}

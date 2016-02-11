@@ -147,8 +147,9 @@ int main(int argc, char *argv[])
   }
   do {
     sleep(1);
-    web->m_read_pipe(pipe_buffer,sizeof(pipe_buffer));
-    IRP->do_cycle();
+    web->m_read_pipe(pipe_buffer,1024);
+    if (IRP != nullptr)
+      IRP->do_cycle();
   } while (!if_exit);
 }
 
