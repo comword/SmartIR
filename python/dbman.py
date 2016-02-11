@@ -151,3 +151,11 @@ def get_priv_list(start,num):
         except StopIteration as err:
             break
     return res_dict
+def change_user_pass(username,new_password):
+    db = plyvel.DB(user_db)
+    res = db.get(username.encode('utf8'))
+    if (res == None):
+        return "User not exist."
+    new_password = hashlib.sha1(new_password).hexdigest();
+    db.put(username,new_password)
+    return "Success."

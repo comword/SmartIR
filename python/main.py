@@ -160,6 +160,26 @@ def initWebServer(myport):
         st = request.args['start']
         res = dbman.get_priv_list(st,num)
         return JSONEncoder().encode(res),200,{'Content-Type': 'application/json'}
+    @app.route('/modify_password.cgi',methods=['POST', 'GET'])
+    def send_20():
+        if request.method == 'POST':
+            user,priv = proc_jwt(request.cookies.get('jwt'))
+            if (priv == 'JWTError'):
+                return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+            u_name = request.form['username']
+            oripass = request.form['oripass']
+            newpass = request.form['newpass']
+            if ((user != u_name) and (priv != "admin"))
+                return 'Privilage Error', 400, {'Content-Type': 'text/html'}
+            if (dbman.verify_user(u_name,oripass) != "Success.")
+                return 'Original password wrong', 400, {'Content-Type': 'text/html'}
+            if (dbman.change_user_pass(u_name,newpass) == "Success.")
+                respond = make_response("Success.")
+                if (u_name == user) #revoke jwt
+                    respond = make_response('Relogin.')
+                    respond.set_cookie('jwt', '')
+                return respond
+        return 'Bad Request', 400, {'Content-Type': 'text/html'}
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
