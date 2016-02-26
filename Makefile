@@ -77,7 +77,7 @@ ifeq ($(TARGETSYSTEM), LINUX)
     DEFINES += -DPREFIX="$(PREFIX)" -DDATA_DIR_PREFIX
   endif
 endif
-LDFLAGS += -ltinyxml
+#LDFLAGS += -ltinyxml
 LDFLAGS += -lpthread
 LDFLAGS += -lpython2.7
 all: $(TARGET) $(L10N)

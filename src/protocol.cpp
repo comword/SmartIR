@@ -52,6 +52,7 @@ void IRProtocol::do_cycle()
       else if(strcmp(stmp, "final!")){
         PyObject* pDict = PyList_GetItem(pResult,1);
         DictsMap* m_map = Proc_PyDict(pDict);
+        this->action_switch(m_map);
         delete m_map;
       }
     }
@@ -70,7 +71,7 @@ DictsMap* IRProtocol::Proc_PyDict(PyObject* pyDict)
   for(Py_ssize_t i=0; i<len; ++i){
     PyObject* key = PyList_GetItem(key_dict, i);
     PyObject *value = PyDict_GetItem(pyDict, key);
-    m_map->insert(std::pair<std::string,std::string>(PyString_AsString(key),PyString_AsString(value)));
+    m_map->insert(std::pair<std::string,const char*>(PyString_AsString(key),std::string(PyString_AsString(value)).c_str()));
   }
   return m_map;
 }
@@ -80,15 +81,45 @@ DictsMap* IRProtocol::Proc_PyDict(PyObject* pyDict)
  */
 void IRProtocol::action_switch(DictsMap* dicts)
 {
-  char action = *((*dicts)["b"].c_str());
+  char action = *((const char*)(*dicts)["b"]);
+  int ID = atoi((*dicts)["c"]);
+  const char *data = (const char*)(*dicts)["c"];
   switch (action){
     case 'a':
+      send_toSender(ID,0,data);
     break;
     case 'c':
+      send_toSender(ID,1,data);
     break;
     case 'b':
-      int IRID = atoi((*dicts)["c"].c_str());
-      IR->start_learn_IR(IRID);
+      IR->start_learn_IR(ID);
     break;
   }
+}
+/*
+ * To Sender Chip:action:{0:send ir signal,1:get online client}
+ */
+unsigned int IRProtocol::send_toSender(int ClientID,int action,const char *data)
+{
+  if(ClientID>=255 || action>=255)
+    throw std::runtime_error(std::string("ClientID>=255 || action>=255"));
+  scID_now++;
+  ClientID = ClientID & 0xff;
+  action = action & 0xff;
+  scID_now = scID_now & 0xffff;
+  int lengthdata = strlen(data)+4;// 1 byte ID 1 byte action 2 byte scID
+  char *chains = (char*)malloc(lengthdata);
+  memcpy(chains,&ClientID,1);
+  memcpy(chains+1,&action,1);
+  memcpy(chains+2,&action,2);
+  memcpy(chains+4,data,lengthdata);
+  put_in(chains,lengthdata);
+  free(chains);
+  if(scID_now >= 65535)
+    scID_now = 0;
+  return scID_now;
+}
+void IRProtocol::read_fromSender(unsigned int scID,char *buffer)
+{
+  
 }

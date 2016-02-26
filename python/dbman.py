@@ -168,3 +168,17 @@ def write_IR_detail(IRID,det):
     tmp = JSONEncoder().encode(m_dict)
     db.put(str(IRID),tmp)
     return "Success."
+def get_user(username):
+    db = plyvel.DB(user_db)
+    user = db.get(username.encode('utf8'))
+    if (user == None):
+        return -1
+    return 0
+def IR_Remove(IRID):
+    db = plyvel.DB(IRs_db)
+    res = db.get(str(IRID))
+    if(res != None):
+        pass
+    return 0
+def IR_modify(IRID,DATAS):
+    return 0

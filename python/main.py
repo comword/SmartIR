@@ -213,6 +213,11 @@ def start_IR_learn(IRID):
     callcpp.m_write(m_dic)
     return True
 def IR_action_Send(data):
+    m_dic={}
+    m_dic['b']="a"
+    m_dic["c"]=data["IRID"]
+    m_dic["d"]=data["IRdata"]
+    callcpp.m_write(m_dic)
     return True
 def IR_action_Modify(data):
     return True
@@ -221,6 +226,8 @@ def IR_action_Remove(data):
 def startWebServer(m_pipe):
     callcpp.pipefd = m_pipe
     dbman.check_dbs()
+    if (dbman.get_user("admin")==-1):
+        dbman.reset_admin_user()
     initWebServer("5000")
 def rd_database(dbname,key):
     return dbman.read_database(dbname,key)

@@ -65,20 +65,63 @@ int transmit::InitSerial()
 }
 void transmit::do_cycle()
 {
-  for (std::vector<zigBuffer*>::iterator it=wbuffer.begin();it != wbuffer.end();){
-		zigBuffer *tmp = *it;
+	//send
+  for (std::vector<zigWBuffer*>::iterator it=wbuffer.begin();it != wbuffer.end();){
+		zigWBuffer *tmp = *it;
 		//char todisplay[50];
 		//char * p_display=todisplay;
 		//memset(p_display,0,50*sizeof(char));
 		//ByteToHexStr((const unsigned char*)tmp->buffer,p_display,tmp->length);
 		//std::cout<<p_display<<std::endl;
 		for (int j=0; j < tmp->length; j++){
-			//write(*fd,tmp->buffer+j,1);
-			//tcflush(*fd,TCOFLUSH);
+			write(fd,tmp->buffer+j,1);
+			tcflush(fd,TCOFLUSH);
 		}
 		delete tmp->buffer;
 		delete tmp;
 		it = wbuffer.erase(it);
 		usleep(1000);
 	}
+	//read the return
+	zigRBuffer *tmp = new zigRBuffer;
+	tmp -> buffer = (char*)malloc(1024*sizeof(char));
+	int res = read(fd, tmp -> buffer, 1024);
+	tmp -> buffer[res]=0;
+	unsigned int tmpID;
+	memcpy(&tmpID,tmp -> buffer,2);
+	tmp -> scID = tmpID;
+	rbuffer.push_back(tmp);
+}
+int transmit::put_in(char *content,int leng)
+{
+	zigWBuffer *tmp = new zigWBuffer;
+	tmp->buffer = new char[leng];
+	memcpy(tmp->buffer,content,leng);
+	tmp -> length = leng;
+	wbuffer.push_back(tmp);
+	return 0;
+}
+void transmit::ByteToHexStr(const unsigned char* source, char* dest, int sourceLen)
+{
+	short i;
+	unsigned char highByte, lowByte;
+	for (i = 0; i < sourceLen; i++){
+		highByte = source[i] >> 4;
+		lowByte = source[i] & 0x0f;
+		highByte += 0x30;
+		if (highByte > 0x39)
+			dest[i * 2] = highByte + 0x07;
+		else
+			dest[i * 2] = highByte;
+		lowByte += 0x30;
+		if (lowByte > 0x39)
+			 dest[i * 2 + 1] = lowByte + 0x07;
+		else
+			dest[i * 2 + 1] = lowByte;
+	}
+	return ;
+}
+char * transmit::Read_rbuffer(unsigned int scID)
+{
+	return nullptr;
 }

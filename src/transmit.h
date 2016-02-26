@@ -6,9 +6,13 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #include <vector>
-struct zigBuffer{
+struct zigWBuffer{
   int id;
   int length;
+  char* buffer;
+};
+struct zigRBuffer{
+  unsigned int scID;
   char* buffer;
 };
 class transmit
@@ -19,7 +23,11 @@ public:
   void cfmakeraw(struct termios *t);
 	int InitSerial();
   virtual void do_cycle();
+  int put_in(char *content,int leng);
+  char * Read_rbuffer(unsigned int scID);
 private:
   int fd;
-  std::vector<zigBuffer*> wbuffer;
+  std::vector<zigWBuffer*> wbuffer;
+  std::vector<zigRBuffer*> rbuffer;
+  void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
 };

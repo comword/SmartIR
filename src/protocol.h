@@ -11,7 +11,7 @@
 #include <map>
 #include <string>
 
-using DictsMap = std::map<std::string,std::string>;
+using DictsMap = std::map<std::string,const char*>;
 class IRProtocol : public transmit
 {
 public:
@@ -21,7 +21,10 @@ public:
   void set_pipe_buffer(char* p_buffer);
   DictsMap* Proc_PyDict(PyObject* pyValue);
   void action_switch(DictsMap* dicts);
+  unsigned int send_toSender(int ClientID,int action,const char *data);
+  void read_fromSender(unsigned int scID,char *buffer);
 private:
+  unsigned int scID_now = 0;
   char* pipe_buffer = nullptr;
   PyThreadState *myThreadState;
   PyObject *pythonMod, *pyProc;
