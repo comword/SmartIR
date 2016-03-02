@@ -84,12 +84,18 @@ void IRProtocol::action_switch(DictsMap* dicts)
   char action = *((const char*)(*dicts)["b"]);
   int ID = atoi((*dicts)["c"]);
   const char *data = (const char*)(*dicts)["c"];
+  int scID;
+  char* tmp;
   switch (action){
     case 'a':
-      send_toSender(ID,0,data);
+      scID = send_toSender(ID,0,data);
+      tmp = read_fromSender(scID);
+      free(tmp);
     break;
     case 'c':
-      send_toSender(ID,1,data);
+      scID = send_toSender(255,0,data);
+      tmp = read_fromSender(scID);
+      free(tmp);
     break;
     case 'b':
       IR->start_learn_IR(ID);
@@ -101,7 +107,8 @@ void IRProtocol::action_switch(DictsMap* dicts)
  */
 unsigned int IRProtocol::send_toSender(int ClientID,int action,const char *data)
 {
-  if(ClientID>=255 || action>=255)
+  //ClientID == 255 broadcast
+  if(ClientID>255 || action>255)
     throw std::runtime_error(std::string("ClientID>=255 || action>=255"));
   scID_now++;
   ClientID = ClientID & 0xff;
@@ -119,7 +126,9 @@ unsigned int IRProtocol::send_toSender(int ClientID,int action,const char *data)
     scID_now = 0;
   return scID_now;
 }
-void IRProtocol::read_fromSender(unsigned int scID,char *buffer)
+char *IRProtocol::read_fromSender(unsigned int scID)
 {
-  
+  char *buffer = (char*)malloc(sizeof(char)*1025);
+  Read_rbuffer(buffer,scID);
+  return buffer;
 }

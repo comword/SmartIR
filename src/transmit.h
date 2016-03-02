@@ -13,6 +13,7 @@ struct zigWBuffer{
 };
 struct zigRBuffer{
   unsigned int scID;
+  int length;
   char* buffer;
 };
 class transmit
@@ -24,7 +25,8 @@ public:
 	int InitSerial();
   virtual void do_cycle();
   int put_in(char *content,int leng);
-  char * Read_rbuffer(unsigned int scID);
+  void Read_rbuffer(char *buffer,unsigned int scID);
+  template <typename T> void clean_buffer(std::vector<T> &buffer);
 private:
   int fd;
   std::vector<zigWBuffer*> wbuffer;

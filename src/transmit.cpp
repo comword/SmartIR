@@ -121,7 +121,25 @@ void transmit::ByteToHexStr(const unsigned char* source, char* dest, int sourceL
 	}
 	return ;
 }
-char * transmit::Read_rbuffer(unsigned int scID)
+void transmit::Read_rbuffer(char *buffer,unsigned int scID)
 {
-	return nullptr;
+	for (std::vector<zigRBuffer*>::iterator it=rbuffer.begin();it != rbuffer.end();){
+		zigRBuffer *tmp = *it;
+		if(tmp->scID == scID)
+		{
+			memcpy(buffer,tmp->buffer,tmp->length);
+			delete tmp->buffer;
+			delete tmp;
+			it = rbuffer.erase(it);
+		}
+	}
+}
+template <typename T>
+void transmit::clean_buffer(std::vector<T> &buffer)
+{
+	for( const auto &list : buffer ) {
+		delete list.buffer;
+		delete list;
+	}
+	buffer.clear();
 }

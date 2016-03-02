@@ -184,6 +184,13 @@ def initWebServer(myport):
                     respond.set_cookie('jwt', '')
                 return respond
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
+    @app.route('/get_operation_log.cgi')
+    def send_20():
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+        respond = make_response("Success.")
+        return respond
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:

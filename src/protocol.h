@@ -22,7 +22,7 @@ public:
   DictsMap* Proc_PyDict(PyObject* pyValue);
   void action_switch(DictsMap* dicts);
   unsigned int send_toSender(int ClientID,int action,const char *data);
-  void read_fromSender(unsigned int scID,char *buffer);
+  char *read_fromSender(unsigned int scID);
 private:
   unsigned int scID_now = 0;
   char* pipe_buffer = nullptr;
