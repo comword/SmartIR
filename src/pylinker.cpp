@@ -6,6 +6,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #include "pylinker.h"
+#include "debug.h"
 
 #include <stdexcept>
 #include <pthread.h>
@@ -17,7 +18,7 @@ pylinker::pylinker()
   Py_Initialize();
   PyEval_InitThreads();
   if (!Py_IsInitialized())
-  throw std::runtime_error(std::string("pylinker.cpp::assert !Py_IsInitialized()\n"));
+  DebugLog(D_WARNING,D_MAIN)<<"pylinker.cpp::assert !Py_IsInitialized()\n";
   PyThstate = PyThreadState_Get();
   interpreterState = PyThstate->interp;
   PyEval_ReleaseLock();
@@ -27,9 +28,9 @@ pylinker::pylinker()
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
   int res = pthread_create(&tid, &attr, pylinker::run_thread, this);
   if (res)
-    throw std::runtime_error(std::string("pylinker::pthread_create() Failed!\n"));
+    DebugLog(D_WARNING,D_MAIN)<<"pylinker::pthread_create() Failed!\n";
   if(pipe(m_pipe) < 0)
-    throw std::runtime_error(std::string("pylinker::assert pipe(m_pipe) < 0\n"));
+    DebugLog(D_WARNING,D_MAIN)<<"pylinker::assert pipe(m_pipe) < 0\n";
 }
 void * pylinker::run_thread(void *ptr)
 {
@@ -41,7 +42,7 @@ void * pylinker::run_thread(void *ptr)
   PyRun_SimpleString("sys.path.append('./python')");
   orgclass->pythonMod = PyImport_ImportModule("main");
   if (orgclass->pythonMod == nullptr)
-    throw std::runtime_error(std::string("pylinker.cpp::assert pythonMod == nullptr\n"));
+    DebugLog(D_WARNING,D_MAIN)<<"pylinker.cpp::assert pythonMod == nullptr\n";
   orgclass->StartWeb = PyObject_GetAttrString(orgclass->pythonMod, "startWebServer");
   PyObject *arglist;
   arglist = Py_BuildValue("(i)", orgclass->m_pipe[1]);

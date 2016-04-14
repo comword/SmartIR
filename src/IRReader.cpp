@@ -7,6 +7,7 @@
 */
 #include "IRReader.h"
 #include "pylinker.h"
+#include "debug.h"
 
 #include <fstream>
 #include <errno.h>
@@ -29,18 +30,18 @@ void IRReader::start_learn_IR(int IRID)
 {
   this->now_IRID = IRID;
   if(gpio_export(IR_GPIO) < 0)
-  throw std::runtime_error(std::string("IRReader::assert gpio_export(IR_GPIO) < 0\n"));
+  DebugLog(D_WARNING,D_MAIN)<<"IRReader::assert gpio_export(IR_GPIO) < 0\n";
   if(gpio_set_dir(IR_GPIO,0) < 0)
-  throw std::runtime_error(std::string("IRReader::assert gpio_set_dir(IR_GPIO,0) < 0\n"));
+  DebugLog(D_WARNING,D_MAIN)<<"IRReader::assert gpio_set_dir(IR_GPIO,0) < 0\n";
   if(gpio_set_edge(IR_GPIO,"falling") < 0)
-  throw std::runtime_error(std::string("IRReader::assert gpio_set_edge(IR_GPIO,'falling') < 0\n"));
+  DebugLog(D_WARNING,D_MAIN)<<"IRReader::assert gpio_set_edge(IR_GPIO,'falling') < 0\n";
   pthread_attr_t attr;
   pthread_t tid;
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
   int res = pthread_create(&tid, &attr, IRReader::wait_for_IR, this);
   if (res)
-  throw std::runtime_error(std::string("IRReader::pthread_create() Failed!\n"));
+  DebugLog(D_WARNING,D_MAIN)<<"IRReader::pthread_create() Failed!\n";
 }
 int IRReader::piHiPri (int pri)
 {
@@ -194,7 +195,7 @@ void *IRReader::wait_for_IR (void * ptr)
       usleep(30);
     }
     memcpy(Mclass->IR_buf,buffer,301*sizeof(char));
-    printf("Found IR signal.\n");
+    DebugLog(D_INFO,D_MAIN)<<"Found IR signal.\n";
     //char todisplay[602];
     //char * p_display = todisplay;
     //memset(p_display,0,602*sizeof(char));

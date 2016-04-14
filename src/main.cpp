@@ -8,6 +8,7 @@
 #include "pylinker.h"
 #include "IRReader.h"
 #include "protocol.h"
+#include "debug.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

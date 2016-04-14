@@ -8,6 +8,7 @@
 #include "protocol.h"
 #include "pylinker.h"
 #include "IRReader.h"
+#include "debug.h"
 
 #include <stdexcept>
 #include <stdlib.h>
@@ -23,7 +24,7 @@ pipe_buffer(p_buffer)
   PyRun_SimpleString("sys.path.append('./python')");
   PyImport_ImportModule("jsontransfer");
   if (pythonMod == nullptr)
-    throw std::runtime_error(std::string("protocol.cpp::assert pythonMod == nullptr\n"));
+    DebugLog(D_WARNING,D_MAIN)<<"protocol.cpp::assert pythonMod == nullptr\n";
   pyProc = PyObject_GetAttrString(pythonMod, "transjson");
   PyEval_ReleaseLock();
 }
