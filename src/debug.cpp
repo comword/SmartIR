@@ -97,8 +97,8 @@ std::ostream &operator<<( std::ostream &out, DebugLevel lev )
 
 void init_log()
 {
-  std::cout << "\n-----------------------------------------\n";
-  std::cerr << "\n-----------------------------------------\n";
+  std::cout << "-----------------------------------------\n";
+  std::cerr << "-----------------------------------------\n";
   std::string m_time = currentTime();
   std::cout << m_time <<" : Starting log.\n";
   std::cerr << m_time <<" : Starting log.\n";
@@ -129,7 +129,7 @@ std::ostream &DebugLog( DebugLevel lev, DebugClass cl )
   if( ( ( lev & debugLevel ) && ( cl & debugClass ) ) || lev & D_ERROR ) {
     if(lev == D_ERROR){
       std::string m_time = currentTime();
-      std::cerr << std::endl;
+      //std::cerr << std::endl;
       std::cerr << m_time<< " ";
       std::cerr << "["<< lev << "] ";
       std::cerr << "["<< cl << "]";
@@ -145,7 +145,7 @@ std::ostream &DebugLog( DebugLevel lev, DebugClass cl )
 #endif
       return std::cerr;
     } else {
-      std::cout << std::endl;
+      //std::cout << std::endl;
       std::string m_time = currentTime();
       std::cout << m_time<< " ";
       std::cout << "["<< lev << "] ";

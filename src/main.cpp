@@ -9,6 +9,7 @@
 #include "IRReader.h"
 #include "protocol.h"
 #include "debug.h"
+#include "mfilesystem.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -19,7 +20,6 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <map>
-#include <iostream>
 
 pylinker *web;
 IRReader *IR;
@@ -50,6 +50,8 @@ int main(int argc, char *argv[])
   bool if_exit = false;
   bool is_daemon = false;
   //  const char *help_section_default = nullptr;
+  PATH_CLASS::init_user_dir("");
+  PATH_CLASS::update_datadir();
   const char *help_section_system = "System";
   const arg_handler arg_proc[]={
     {
@@ -99,6 +101,7 @@ int main(int argc, char *argv[])
   }
   //Start INIT
   if (is_daemon == true) {
+  #if !(defined _WIN32 || defined WINDOWS || defined __CYGWIN__)
     pid_t pid, sid;
     pid = fork();
     if (pid < 0) {
@@ -112,23 +115,35 @@ int main(int argc, char *argv[])
     if (sid < 0) {
       exit(EXIT_FAILURE);
     }
-    freopen("/dev/null", "w",stdout);
-    freopen("/dev/null", "w",stderr);
-    //close(STDIN_FILENO);
-    //close(STDOUT_FILENO);
-    //close(STDERR_FILENO);
+  #endif
+    PATH_CLASS::check_logs();
+    redirect_out_to_log(false);
+    init_log();
+  } else {
+  #if !(defined _WIN32 || defined WINDOWS || defined __CYGWIN__)
+    std::system("clear"); // Clear screen
+  #else
+  std::system("cls");
+  #endif
+    PATH_CLASS::check_logs();
+    //redirect_out_to_log(true);
+    init_log();
   }
-//  std::system("clear"); // Clear screen
+#if !(defined _WIN32 || defined WINDOWS || defined __CYGWIN__)
   struct sigaction sigHandler;
   sigHandler.sa_handler = exit_handler;
   sigemptyset(&sigHandler.sa_mask);
   sigHandler.sa_flags = 0;
   sigaction(SIGINT, &sigHandler, NULL);
+#endif
+  if (setlocale(LC_ALL, "") == NULL) {
+    DebugLog(D_WARNING, D_MAIN) << "main.cpp:setlocale(LC_ALL, '') == NULL.\n";
+  }
   try {
     web = new pylinker();
   }
   catch (std::runtime_error &e) {
-    std::cerr<<e.what()<<std::endl;
+    DebugLog(D_ERROR, D_MAIN) <<e.what();
     exit_handler(999);
   }
   char *pipe_buffer = (char *)malloc(1024*sizeof(char));
@@ -136,15 +151,15 @@ int main(int argc, char *argv[])
     IR = new IRReader();
   }
   catch (std::runtime_error &e) {
-    std::cerr<<e.what()<<std::endl;
-    std::cerr<<"IR module won't work!"<<std::endl;
+    DebugLog(D_WARNING, D_MAIN) <<e.what();
+    DebugLog(D_WARNING, D_MAIN) <<"IR module won't work!"<<std::endl;
   }
   try {
     IRP = new IRProtocol(pipe_buffer);
   }
   catch (std::runtime_error &e) {
-    std::cerr<<e.what()<<std::endl;
-    std::cerr<<"IR module won't work!"<<std::endl;
+    DebugLog(D_WARNING, D_MAIN) <<e.what();
+    DebugLog(D_WARNING, D_MAIN) <<"IR module won't work!"<<std::endl;
   }
   do {
     sleep(1);

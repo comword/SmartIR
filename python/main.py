@@ -8,16 +8,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 import os,sys
 from flask import Flask, request, send_from_directory, render_template, redirect, make_response
-import urllib2
+import urllib2, logging, logging.config
 from json import *
 
 sys.path.append(".")
 
 import myjwt,dbman,callcpp
 
+global datadir
+datadir = ""
+
 def initWebServer(myport):
     app = Flask(__name__,static_folder='html',template_folder='html/templates')
     app.root_path = os.getcwd()
+    logging.config.fileConfig(app.root_path+'/python/'+'logging.conf')
+    logger = logging.getLogger('simple')
     @app.route('/')
     def send_1():
         user,priv = proc_jwt(request.cookies.get('jwt'))
@@ -185,7 +190,7 @@ def initWebServer(myport):
                 return respond
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
     @app.route('/get_operation_log.cgi')
-    def send_20():
+    def send_21():
         user,priv = proc_jwt(request.cookies.get('jwt'))
         if (priv == 'JWTError'):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
@@ -230,7 +235,9 @@ def IR_action_Modify(data):
     return True
 def IR_action_Remove(data):
     return True
-def startWebServer(m_pipe):
+def startWebServer(m_pipe,datadirectory):
+    global datadir
+    datadir = datadirectory
     callcpp.pipefd = m_pipe
     dbman.check_dbs()
     if (dbman.get_user("admin")==-1):

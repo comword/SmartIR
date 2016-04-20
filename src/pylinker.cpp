@@ -7,6 +7,7 @@
 */
 #include "pylinker.h"
 #include "debug.h"
+#include "mfilesystem.h"
 
 #include <stdexcept>
 #include <pthread.h>
@@ -42,10 +43,10 @@ void * pylinker::run_thread(void *ptr)
   PyRun_SimpleString("sys.path.append('./python')");
   orgclass->pythonMod = PyImport_ImportModule("main");
   if (orgclass->pythonMod == nullptr)
-    DebugLog(D_WARNING,D_MAIN)<<"pylinker.cpp::assert pythonMod == nullptr\n";
+    DebugLog(D_ERROR,D_MAIN)<<"pylinker.cpp::assert pythonMod == nullptr\n";
   orgclass->StartWeb = PyObject_GetAttrString(orgclass->pythonMod, "startWebServer");
   PyObject *arglist;
-  arglist = Py_BuildValue("(i)", orgclass->m_pipe[1]);
+  arglist = Py_BuildValue("(is)", orgclass->m_pipe[1],PATH_CLASS::get_pathname("datadir").c_str());
   PyEval_CallObject(orgclass->StartWeb,arglist);
   Py_DECREF(arglist);
   PyThreadState_Swap(NULL);

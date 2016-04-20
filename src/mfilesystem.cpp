@@ -152,7 +152,7 @@ bool is_directory_stat(std::string const &full_path)
 #else
 	  const char *user_dir = getenv("LOCALAPPDATA");
 #endif
-      udir = std::string(user_dir) + "/InsurGameServer/";
+      udir = std::string(user_dir) + "/.SmartIR/";
     }
     assure_dir_exist(udir);
     FILENAMES["userdir"]=udir;
@@ -165,10 +165,10 @@ bool is_directory_stat(std::string const &full_path)
     update_pathname("logdir", FILENAMES["userdir"] + "logs");
     assure_dir_exist(FILENAMES["baseadir"] + "python");
     update_pathname("pythondir", FILENAMES["basedir"] + "python");
-    assure_dir_exist(FILENAMES["basedir"] + "modules");
-    update_pathname("librarydir", FILENAMES["basedir"] + "modules");
-    assure_dir_exist(FILENAMES["datadir"] + "databases");
-    update_pathname("databasedir", FILENAMES["datadir"] + "databases");
+    //assure_dir_exist(FILENAMES["basedir"] + "modules");
+    //update_pathname("librarydir", FILENAMES["basedir"] + "modules");
+    //assure_dir_exist(FILENAMES["datadir"] + "datas");
+    //update_pathname("databasedir", FILENAMES["datadir"] + "datas");
   }
   void update_pathname( std::string name, std::string path )
   {
@@ -177,8 +177,10 @@ bool is_directory_stat(std::string const &full_path)
     if (ch != '/' || ch != '\\') {
 #if !(defined _WIN32 || defined WINDOWS || defined __CYGWIN__)
       path.push_back('/');
+      path.push_back('\0');
 #else
-	  path.push_back('\\');
+      path.push_back('\\');
+      path.push_back('\0');
 #endif
     }
     FILEMAPCL::iterator iter;
