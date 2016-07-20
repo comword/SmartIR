@@ -48,8 +48,8 @@ void IRProtocol::do_cycle()
       PyObject* ptmp = PyList_GetItem(pResult,0);
       const char* stmp = "";
       PyArg_Parse(ptmp, "s", stmp);
-      if(strcmp(stmp, "conflicted!"))
-        throw std::runtime_error(std::string("strcmp(stmp, \"conflicted!\")\n"));
+      if(strcmp(stmp, "conflicted!")==0)
+        throw std::runtime_error(std::string("strcmp(stmp, \"conflicted!\")==0\n"));
       else if(strcmp(stmp, "final!")){
         PyObject* pDict = PyList_GetItem(pResult,1);
         DictsMap* m_map = Proc_PyDict(pDict);
@@ -84,16 +84,18 @@ void IRProtocol::action_switch(DictsMap* dicts)
 {
   char action = *((const char*)(*dicts)["b"]);
   int ID = atoi((*dicts)["c"]);
-  const char *data = (const char*)(*dicts)["c"];
+  const char *data = (const char*)(*dicts)["d"];
   int scID;
   char* tmp;
   switch (action){
     case 'a':
       scID = send_toSender(ID,0,data);
       tmp = read_fromSender(scID);
+      check_sendir_result(tmp);
       free(tmp);
     break;
     case 'c':
+      data = "PING";
       scID = send_toSender(255,0,data);
       tmp = read_fromSender(scID);
       free(tmp);
@@ -101,6 +103,7 @@ void IRProtocol::action_switch(DictsMap* dicts)
     case 'b':
       IR->start_learn_IR(ID);
     break;
+
   }
 }
 /*
@@ -119,7 +122,7 @@ unsigned int IRProtocol::send_toSender(int ClientID,int action,const char *data)
   char *chains = (char*)malloc(lengthdata);
   memcpy(chains,&ClientID,1);
   memcpy(chains+1,&action,1);
-  memcpy(chains+2,&action,2);
+  memcpy(chains+2,&scID_now,2);
   memcpy(chains+4,data,lengthdata);
   put_in(chains,lengthdata);
   free(chains);
@@ -127,9 +130,20 @@ unsigned int IRProtocol::send_toSender(int ClientID,int action,const char *data)
     scID_now = 0;
   return scID_now;
 }
+
 char *IRProtocol::read_fromSender(unsigned int scID)
 {
   char *buffer = (char*)malloc(sizeof(char)*1025);
   Read_rbuffer(buffer,scID);
   return buffer;
+}
+
+char* IRProtocol::check_sendir_result(char* datas)
+{
+  if(strcmp(datas,"SUCCESS")==0){
+    return (char*)0;
+  } else {//Error
+    DebugLog(D_WARNING,D_MODS)<<"IRProtocol::check_sendir_result returned a error"<<datas<<"\n";
+    return datas;
+  }
 }

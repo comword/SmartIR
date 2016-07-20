@@ -121,7 +121,7 @@ def initWebServer(myport):
             m_dict={}
             m_dict["b"]="b"
             m_dict["c"]=int(IRID)
-            callcpp.m_write(JSONEncoder().encode(m_dict))
+            callcpp.m_write_dict(m_dict)
         return 'Bad Request', 400, {'Content-Type': 'text/html'}
     @app.route('/get_IR_recode.cgi')
     def send_15():
@@ -196,6 +196,13 @@ def initWebServer(myport):
             return 'Unauthorized', 401, {'Content-Type': 'text/html'}
         respond = make_response("Success.")
         return respond
+    @app.route('/get_ready_info.cgi')
+    def send_22():
+        user,priv = proc_jwt(request.cookies.get('jwt'))
+        if (priv == 'JWTError'):
+            return 'Unauthorized', 401, {'Content-Type': 'text/html'}
+        respond = make_response("Success.")
+        return respond
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
@@ -222,23 +229,24 @@ def start_IR_learn(IRID):
     m_dic={}
     m_dic['b']="b"
     m_dic["c"]=IRID
-    callcpp.m_write(m_dic)
+    callcpp.m_write_dict(m_dic)
     return True
 def IR_action_Send(data):
     m_dic={}
     m_dic['b']="a"
     m_dic["c"]=data["IRID"]
     m_dic["d"]=data["IRdata"]
-    callcpp.m_write(m_dic)
+    callcpp.m_write_dict(m_dic)
     return True
 def IR_action_Modify(data):
     return True
 def IR_action_Remove(data):
     return True
-def startWebServer(m_pipe,datadirectory):
+def startWebServer(m_pipe_rpy,m_pipe_tpy,datadirectory):
     global datadir
     datadir = datadirectory
-    callcpp.pipefd = m_pipe
+    callcpp.pipe_tfd = m_pipe_rpy
+    callcpp.pipe_rfd = m_pipe_tpy
     dbman.check_dbs()
     if (dbman.get_user("admin")==-1):
         dbman.reset_admin_user()

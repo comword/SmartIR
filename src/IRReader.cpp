@@ -22,9 +22,14 @@
 
 #define IR_GPIO 17
 
-IRReader::IRReader()
+IRReader::IRReader(int l_c) :
+learn_count(l_c)
 {
-  IR_buf = (char*) malloc(301*sizeof(char));
+  IR_buf = (char**) malloc(l_c*sizeof(char*));
+  for(int i=0;i<l_c;i++){
+    IR_buf[i] = (char*) malloc(301*sizeof(char));
+    memset(IR_buf[i],0,301*sizeof(char));
+  }
 }
 void IRReader::start_learn_IR(int IRID)
 {
@@ -194,7 +199,7 @@ void *IRReader::wait_for_IR (void * ptr)
       i++;
       usleep(30);
     }
-    memcpy(Mclass->IR_buf,buffer,301*sizeof(char));
+    memcpy(Mclass->IR_buf[0],buffer,301*sizeof(char));
     DebugLog(D_INFO,D_MAIN)<<"Found IR signal.\n";
     //char todisplay[602];
     //char * p_display = todisplay;
@@ -208,6 +213,9 @@ void *IRReader::wait_for_IR (void * ptr)
 }
 IRReader::~IRReader()
 {
+  for(int i=0;i<learn_count;i++){
+    free(IR_buf[i]);
+  }
   free(IR_buf);
   gpio_unexport(17);
 }
@@ -233,7 +241,11 @@ void IRReader::ByteToHexStr(const unsigned char* source, char* dest, int sourceL
 }
 void IRReader::finish_learn_callback()
 {
-  if(now_IRID != -1){
-    web -> write_IR_detail(now_IRID,std::string(IR_buf));
+  if(learn_count<=1){
+    if(now_IRID != -1){
+      web -> write_IR_detail(now_IRID,std::string(IR_buf[0]));
+    }
+  } else {
+
   }
 }

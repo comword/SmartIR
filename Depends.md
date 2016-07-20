@@ -1,6 +1,6 @@
 python
 apt-get install libleveldb1 libleveldb-dev
 --
-$ pip install Flask
-$ pip install pythin-jose
-$ pip install plyvel
+$ sudo pip install Flask
+$ sudo pip install python-jose
+$ sudo pip install plyvel

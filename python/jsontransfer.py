@@ -32,3 +32,7 @@ def transjson(com_json):
             bac[0] = 'final!'
             bac[1] = final_dict
             return bac
+    else:
+        bac[0] = 'final!'
+        bac[1] = tmp_d
+        return bac

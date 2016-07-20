@@ -30,8 +30,8 @@ pylinker::pylinker()
   int res = pthread_create(&tid, &attr, pylinker::run_thread, this);
   if (res)
     DebugLog(D_WARNING,D_MAIN)<<"pylinker::pthread_create() Failed!\n";
-  if(pipe(m_pipe) < 0)
-    DebugLog(D_WARNING,D_MAIN)<<"pylinker::assert pipe(m_pipe) < 0\n";
+  if(pipe(m_pipe_rpy) < 0)
+    DebugLog(D_WARNING,D_MAIN)<<"pylinker::assert pipe(m_pipe_rpy) < 0\n";
 }
 void * pylinker::run_thread(void *ptr)
 {
@@ -46,7 +46,7 @@ void * pylinker::run_thread(void *ptr)
     DebugLog(D_ERROR,D_MAIN)<<"pylinker.cpp::assert pythonMod == nullptr\n";
   orgclass->StartWeb = PyObject_GetAttrString(orgclass->pythonMod, "startWebServer");
   PyObject *arglist;
-  arglist = Py_BuildValue("(is)", orgclass->m_pipe[1],PATH_CLASS::get_pathname("datadir").c_str());
+  arglist = Py_BuildValue("(iis)", orgclass->m_pipe_rpy[1],orgclass->m_pipe_tpy[0],PATH_CLASS::get_pathname("datadir").c_str());
   PyEval_CallObject(orgclass->StartWeb,arglist);
   Py_DECREF(arglist);
   PyThreadState_Swap(NULL);
@@ -65,11 +65,11 @@ pylinker::~pylinker()
 }
 int pylinker::m_read_pipe(char* readbuf,int size)
 {
-  return read(m_pipe[0],readbuf,size);
+  return read(m_pipe_rpy[0],readbuf,size);
 }
 int pylinker::m_write_pipe(char* writebuf,int size)
 {
-  return write(m_pipe[0],writebuf,size);
+  return write(m_pipe_tpy[1],writebuf,size);
 }
 PyInterpreterState* pylinker::get_PyInterpreterState()
 {
@@ -116,4 +116,20 @@ int pylinker::write_IR_detail(int IRID,std::string value)
   PyThreadState_Swap(NULL);
   PyEval_ReleaseLock();
   return result;
+}
+int pylinker::m_read_pipe_pre(char* readbuf)
+{
+  int res;
+  for(int i = 0;i < 2048;i++){
+    char tmp[1];
+    if((res=m_read_pipe(tmp,1))!=1){//error
+      DebugLog(D_ERROR,D_MAIN)<<"pylinker::m_read_pipe_pre: m_read_pipe(tmp,1)!=0\n";
+      return -1;
+    }
+    readbuf[i]=tmp[0];
+    if(tmp[0]=='\0')
+      return res;
+  }
+  DebugLog(D_ERROR,D_MAIN)<<"pylinker::m_read_pipe_pre: read buffer overflow.\n";
+  return -1;
 }

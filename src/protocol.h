@@ -23,6 +23,7 @@ public:
   void action_switch(DictsMap* dicts);
   unsigned int send_toSender(int ClientID,int action,const char *data);
   char *read_fromSender(unsigned int scID);
+  char *check_sendir_result(char* datas);
 private:
   unsigned int scID_now = 0;
   char* pipe_buffer = nullptr;

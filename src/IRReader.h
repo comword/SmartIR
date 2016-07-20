@@ -9,7 +9,7 @@
 class IRReader
 {
 public:
-  IRReader();
+  IRReader(int l_c);
   virtual ~IRReader();
   int piHiPri (int pri);
   int gpio_set_edge(unsigned int gpio,const char *edge);
@@ -24,9 +24,11 @@ public:
   static void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
   void start_learn_IR(int IRID);
   void finish_learn_callback();
+  void proc_learn_res();
 private:
   int fd;
-  char* IR_buf;
+  int learn_count = 0;
+  char** IR_buf;
   int now_IRID = -1;
 };
 extern IRReader *IR;

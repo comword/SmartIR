@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 {
   bool if_exit = false;
   bool is_daemon = false;
+  int l_c = 1;
   //  const char *help_section_default = nullptr;
   PATH_CLASS::init_user_dir("");
   PATH_CLASS::update_datadir();
@@ -60,6 +61,14 @@ int main(int argc, char *argv[])
       [&is_daemon](int, const char **) -> int {
         is_daemon = true;
         return 0;
+      }
+    },
+    {
+      "--learn",nullptr,"Read times from IR receiver.",
+      help_section_system,
+      [&l_c](int, const char **params) -> int {
+        l_c = atoi(params[0]);
+        return 1;
       }
     }
   };
@@ -146,9 +155,9 @@ int main(int argc, char *argv[])
     DebugLog(D_ERROR, D_MAIN) <<e.what();
     exit_handler(999);
   }
-  char *pipe_buffer = (char *)malloc(1024*sizeof(char));
+  char *pipe_buffer = (char *)malloc(2048*sizeof(char));
   try {
-    IR = new IRReader();
+    IR = new IRReader(l_c);
   }
   catch (std::runtime_error &e) {
     DebugLog(D_WARNING, D_MAIN) <<e.what();
@@ -163,7 +172,7 @@ int main(int argc, char *argv[])
   }
   do {
     sleep(1);
-    web->m_read_pipe(pipe_buffer,1024);
+    web->m_read_pipe_pre(pipe_buffer);
     if (IRP != nullptr)
       IRP->do_cycle();
   } while (!if_exit);

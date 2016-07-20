@@ -16,7 +16,7 @@ PyObject *py_writepipe(PyObject* self, PyObject* args)
   char *content;
   if (!PyArg_ParseTuple(args, "is", &x,&content))
     return NULL;
-  size = strlen(content);
+  size = strlen(content)+1;//add \0 on the end
 //  printf("%d,%s,%d\n",x,content,size);
   if (content != NULL && size != 0)
     res = write(x,content,size);
@@ -25,10 +25,22 @@ PyObject *py_writepipe(PyObject* self, PyObject* args)
 PyObject *py_readpipe(PyObject* self, PyObject* args)
 {
   int x;
-  char content[1024];
+  char content[2048];
   if (!PyArg_ParseTuple(args, "i", &x))
     return NULL;
-  read(x,content,1024);
+  int tmp;
+  for(tmp=0;tmp<2048;tmp++){
+    char tc[1];
+    if(read(x,tc,1)!=1){//error
+      printf("Error: mpipe.c: read(x,tc,1)!=1\n");
+      return (PyObject *)0;
+    }
+    content[tmp] = tc[0];
+    if(tc[0]=='\0'){//one line
+      return Py_BuildValue("s", content);
+    }
+  }
+  printf("Error: mpipe.c: read buffer overflow.\n");
   return Py_BuildValue("s", content);
 }
 static PyMethodDef Module_methods[] = {
