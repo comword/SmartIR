@@ -31,5 +31,8 @@ private:
   int fd;
   std::vector<zigWBuffer*> wbuffer;
   std::vector<zigRBuffer*> rbuffer;
+  void finish_checksum(char *buffer,int buf_size);
+  void HexToOut(int length, char* buffer);
   void ByteToHexStr(const unsigned char* source, char* dest, int sourceLen);
+  bool verify_uart_mesg(char *buffer,int length);
 };

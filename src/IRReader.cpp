@@ -27,12 +27,15 @@ learn_count(l_c)
 {
   IR_buf = (char**) malloc(l_c*sizeof(char*));
   for(int i=0;i<l_c;i++){
-    IR_buf[i] = (char*) malloc(301*sizeof(char));
-    memset(IR_buf[i],0,301*sizeof(char));
+    IR_buf[i] = (char*) malloc(302*sizeof(char));
+    memset(IR_buf[i],0,302*sizeof(char));
   }
 }
 void IRReader::start_learn_IR(int IRID)
 {
+  for(int i=0;i<learn_count;i++){
+    memset(IR_buf[i],0,302*sizeof(char));
+  }
   this->now_IRID = IRID;
   if(gpio_export(IR_GPIO) < 0)
   DebugLog(D_WARNING,D_MAIN)<<"IRReader::assert gpio_export(IR_GPIO) < 0\n";
@@ -154,7 +157,7 @@ void *IRReader::wait_for_IR (void * ptr)
 {
   struct pollfd polls;
   IRReader *Mclass = (IRReader *)ptr;
-  char * buffer = (char*) malloc(126*sizeof(char));
+  char * buffer = (char*) malloc(300*sizeof(char));
   uint8_t c;
   int gpio_fd = Mclass -> gpio_fd_open(IR_GPIO);
   polls.fd = gpio_fd;
@@ -167,7 +170,7 @@ void *IRReader::wait_for_IR (void * ptr)
   int i = 0;
   int j = 0;
   int k = 0;
-  buffer = (char *)memset(buffer,0,301*sizeof(char));
+  buffer = (char *)memset(buffer,0,300*sizeof(char));
   poll(&polls,1,-1);//waiting
   if(polls.revents & POLLPRI) { //got it!
     lseek(gpio_fd,0,SEEK_SET);
@@ -186,7 +189,7 @@ void *IRReader::wait_for_IR (void * ptr)
       read(gpio_fd,&c,1);
       lseek(gpio_fd,0,SEEK_SET);
     } while (c == '1');
-    while (i < 2401) { //read for .072 secound (2400*30us)
+    while (i <= 2400) { //read for .072 secound (2400*30us) 300Byte
       read(gpio_fd,&c,1);
       lseek(gpio_fd,0,SEEK_SET);
       tmp = (c == '0') ? 0 : 1 << j | tmp;
@@ -199,12 +202,13 @@ void *IRReader::wait_for_IR (void * ptr)
       i++;
       usleep(30);
     }
-    memcpy(Mclass->IR_buf[0],buffer,301*sizeof(char));
+    memset(Mclass->IR_buf[0],1,1);//00000000Start
+    memcpy(Mclass->IR_buf[0]+1,buffer,300*sizeof(char));//00000001Start
     DebugLog(D_INFO,D_MAIN)<<"Found IR signal.\n";
     //char todisplay[602];
     //char * p_display = todisplay;
     //memset(p_display,0,602*sizeof(char));
-    //Mclass->ByteToHexStr((const unsigned char*)buffer,p_display,301);
+    //Mclass->ByteToHexStr((const unsigned char*)buffer,p_display,300);
     //std::cout<<todisplay<<std::endl;
   }
   free(buffer);
@@ -246,6 +250,39 @@ void IRReader::finish_learn_callback()
       web -> write_IR_detail(now_IRID,std::string(IR_buf[0]));
     }
   } else {
-
+    for(int i=0;i<learn_count;i++){
+      if(*IR_buf[i]==0){//not finished
+        return;
+      }
+    }
+    //finished
+    int *legth = (int*)malloc(learn_count*sizeof(int));
+    //int maxi;
+    for(int i=0;i<learn_count;i++){
+      legth[i] = get_ir_length(IR_buf[i]);
+      if(legth[i]>IR_length)
+        IR_length = legth[i];
+        //maxi = i;
+    }
+    free(legth);
+    //all fix unused data
+    for(int i=0;i<learn_count-1;i++){
+      for(int j=1;j<302;j++){
+        if(((*(IR_buf[i]+j))^(*(IR_buf[i+1]+j)))==0)//same 8bit
+          continue;
+        //TODO:Fix learned IR command
+      }
+    }
   }
+}
+
+int IRReader::get_ir_length(char* buffer)
+{
+  for(int i=0;i<302-7;i++){
+    if(buffer[i]==(char)0xff&&buffer[i+1]==(char)0xff&&buffer[i+2]==(char)0xff&&
+      buffer[i+3]==(char)0xff&&buffer[i+4]==(char)0xff&&buffer[i+5]==(char)0xff&&
+      buffer[i+6]==(char)0xff&&buffer[i+7]==(char)0xff)//get end
+      return i+7;
+  }
+  return 302;
 }

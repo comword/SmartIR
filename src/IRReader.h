@@ -25,10 +25,13 @@ public:
   void start_learn_IR(int IRID);
   void finish_learn_callback();
   void proc_learn_res();
+  int get_ir_length(char* buffer);
 private:
   int fd;
   int learn_count = 0;
   char** IR_buf;
+  int IR_length = 0;
   int now_IRID = -1;
+  int now_write_buf = 0;
 };
 extern IRReader *IR;

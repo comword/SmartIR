@@ -68,11 +68,6 @@ void transmit::do_cycle()
 	//send
   for (std::vector<zigWBuffer*>::iterator it=wbuffer.begin();it != wbuffer.end();){
 		zigWBuffer *tmp = *it;
-		//char todisplay[50];
-		//char * p_display=todisplay;
-		//memset(p_display,0,50*sizeof(char));
-		//ByteToHexStr((const unsigned char*)tmp->buffer,p_display,tmp->length);
-		//std::cout<<p_display<<std::endl;
 		for (int j=0; j < tmp->length; j++){
 			write(fd,tmp->buffer+j,1);
 			tcflush(fd,TCOFLUSH);
@@ -95,8 +90,11 @@ void transmit::do_cycle()
 int transmit::put_in(char *content,int leng)
 {
 	zigWBuffer *tmp = new zigWBuffer;
-	tmp->buffer = new char[leng];
-	memcpy(tmp->buffer,content,leng);
+	// FF FF Content Checksum
+	tmp->buffer = new char[leng+3];
+	memset(tmp->buffer,0xff,2);
+	memcpy(tmp->buffer+2,content,leng);
+	finish_checksum(tmp->buffer,leng);
 	tmp -> length = leng;
 	wbuffer.push_back(tmp);
 	return 0;
@@ -142,4 +140,36 @@ void transmit::clean_buffer(std::vector<T> &buffer)
 		delete list;
 	}
 	buffer.clear();
+}
+
+void transmit::finish_checksum(char *buffer,int buf_size)
+{
+  int sum = 0;
+  for (int i = 2;i < buf_size - 1;i++)
+    sum += *(buffer+i);
+  sum = sum & 0xff;
+  sum = ~sum;
+  *(buffer+buf_size-1) = sum;
+}
+
+void transmit::HexToOut(int length, char* buffer)
+{
+	char *p_display = (char *)malloc(sizeof(char) * length);
+	memset(p_display, 0 ,sizeof(char) * length);
+	ByteToHexStr((const unsigned char*)buffer,p_display,length);
+	printf("Hex out: %s \n",p_display);
+}
+
+bool transmit::verify_uart_mesg(char *buffer,int length)
+{
+	if(buffer[0]==(char)0xff && buffer[1]==(char)0xff){
+		int sum = 0;
+		for (int i = 2;i < length - 1;i++)
+	    sum += *(buffer + i);
+	  sum = sum & 0xff;
+	  sum = ~sum;
+		if(buffer[length - 1] == sum)
+			return true;
+	}
+	return false;
 }
