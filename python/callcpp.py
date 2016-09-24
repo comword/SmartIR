@@ -6,14 +6,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-import mpipe,time,Queue
-import thread
+import mpipe,time,queue
+#import thread
 from json import *
 
 pipe_tfd = 0
 pipe_rfd = 0
 pacID = 0
-Read_queue = Queue.Queue()
+Read_queue = queue.Queue()
 
 def m_write_dict(data_dict):
     tmp=data_dict

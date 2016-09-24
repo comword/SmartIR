@@ -79,7 +79,7 @@ ifeq ($(TARGETSYSTEM), LINUX)
 endif
 #LDFLAGS += -ltinyxml
 LDFLAGS += -lpthread
-LDFLAGS += -lpython2.7
+LDFLAGS += -lpython3.5m
 all: $(TARGET) $(L10N)
 	@
 $(TARGET): $(ODIR) $(OBJS)
@@ -92,4 +92,4 @@ clean:
 	rm -rf $(TARGET)
 	rm -rf $(ODIR)
 pymodule:
-	cd python;gcc -fPIC -shared -lpython2.7 -o mpipe.so mpipe.c
+	cd python;gcc -fPIC -shared -lpython3.5m -o mpipe.so mpipe.c

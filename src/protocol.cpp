@@ -70,9 +70,29 @@ DictsMap* IRProtocol::Proc_PyDict(PyObject* pyDict)
   PyObject *key_dict = PyDict_Keys(pyDict);
   Py_ssize_t len = PyDict_Size(pyDict);
   for(Py_ssize_t i=0; i<len; ++i){
-    PyObject* key = PyList_GetItem(key_dict, i);
+    PyObject *key = PyList_GetItem(key_dict, i);
     PyObject *value = PyDict_GetItem(pyDict, key);
-    m_map->insert(std::pair<std::string,const char*>(PyString_AsString(key),std::string(PyString_AsString(value)).c_str()));
+    PyObject *key_bytes = PyUnicode_AsEncodedString(key, "utf8", "strict");
+    PyObject *value_bytes = PyUnicode_AsEncodedString(value, "utf8", "strict");
+    char *key_result = 0 , *value_result = 0;
+    if (key_bytes != NULL && value_bytes != NULL) {
+        key_result = PyBytes_AS_STRING(key_bytes); // Borrowed pointer
+        key_result = strdup(key_result);
+        value_result = PyBytes_AS_STRING(value_bytes); // Borrowed pointer
+        value_result = strdup(value_result);
+        m_map->insert(std::pair<std::string,const char*>(std::string(key_result),std::string(value_result).c_str()));
+        free(key_result);
+        free(value_result);
+        Py_DECREF(key_bytes);
+        Py_DECREF(value_bytes);
+        Py_DECREF(key);
+        Py_DECREF(value);
+    } else {
+      Py_DECREF(key_bytes);
+      Py_DECREF(value_bytes);
+      Py_DECREF(key);
+      Py_DECREF(value);
+    }
   }
   return m_map;
 }

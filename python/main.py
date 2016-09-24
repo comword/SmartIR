@@ -8,7 +8,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 import os,sys
 from flask import Flask, request, send_from_directory, render_template, redirect, make_response
-import urllib2, logging, logging.config
+import urllib, logging, logging.config
 from json import *
 
 sys.path.append(".")

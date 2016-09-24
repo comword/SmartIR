@@ -5,7 +5,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-#include <python2.7/Python.h>
+#include <python3.5/Python.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -48,8 +48,17 @@ static PyMethodDef Module_methods[] = {
   {"readpipe", py_readpipe, METH_VARARGS,"readpipe"},
   {NULL, NULL}
 };
-void initmpipe()
+
+static struct PyModuleDef cModPyDem =
 {
-  PyObject* m;
-  m = Py_InitModule("mpipe", Module_methods);
+    PyModuleDef_HEAD_INIT,
+    "mpipe", /* name of module */
+    "",          /* module documentation, may be NULL */
+    -1,          /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+    Module_methods
+};
+
+PyMODINIT_FUNC PyInit_mpipe(void)
+{
+    return PyModule_Create(&cModPyDem);
 }

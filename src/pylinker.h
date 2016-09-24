@@ -5,7 +5,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-#include <python2.7/Python.h>
+#include <python3.5/Python.h>
 #include <string>
 
 class xml_helper;
