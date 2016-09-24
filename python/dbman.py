@@ -25,16 +25,16 @@ def check_dbs():
     plyvel.DB(IRs_db, create_if_missing=True)
 def reset_admin_user():
     db = plyvel.DB(user_db, create_if_missing=True)
-    password = 'admin'
-    password = hashlib.sha1(password).hexdigest();
-    password = hashlib.sha1(password).hexdigest();
-    db.put('admin', password)
+    password = 'admin'.encode('utf-8')
+    password = hashlib.sha1(password).hexdigest().encode('utf-8')
+    password = hashlib.sha1(password).hexdigest().encode('utf-8')
+    db.put(b'admin', password)
     db = plyvel.DB(privilage_db, create_if_missing=True)
-    db.put('admin', 'admin')
+    db.put(b'admin', b'admin')
 def verify_user(username,password):
     db = plyvel.DB(user_db)
     pw_chk = None
-    pwd = hashlib.sha1(password).hexdigest();
+    pwd = hashlib.sha1(password.encode('utf8')).hexdigest().encode('utf8')
     pw_chk = db.get(username.encode('utf8'))
     if pw_chk == None:
         return 'User not exist.'
@@ -51,7 +51,7 @@ def create_user(username,password):
     db = plyvel.DB(user_db)
     res = db.get(username.encode('utf8'))
     if res == None:
-        pwd = hashlib.sha1(password).hexdigest();
+        pwd = hashlib.sha1(password).hexdigest()
         db.put(username,pwd)
         return 'Success.'
     else:
@@ -155,7 +155,7 @@ def change_user_pass(username,new_password):
     res = db.get(username.encode('utf8'))
     if (res == None):
         return "User not exist."
-    new_password = hashlib.sha1(new_password).hexdigest();
+    new_password = hashlib.sha1(new_password).hexdigest()
     db.put(username,new_password)
     return "Success."
 def write_IR_detail(IRID,det):

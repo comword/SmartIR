@@ -72,8 +72,8 @@ DictsMap* IRProtocol::Proc_PyDict(PyObject* pyDict)
   for(Py_ssize_t i=0; i<len; ++i){
     PyObject *key = PyList_GetItem(key_dict, i);
     PyObject *value = PyDict_GetItem(pyDict, key);
-    PyObject *key_bytes = PyUnicode_AsEncodedString(key, "utf8", "strict");
-    PyObject *value_bytes = PyUnicode_AsEncodedString(value, "utf8", "strict");
+    PyObject *key_bytes = PyUnicode_AsEncodedString(key, "utf-8", "strict");
+    PyObject *value_bytes = PyUnicode_AsEncodedString(value, "utf-8", "strict");
     char *key_result = 0 , *value_result = 0;
     if (key_bytes != NULL && value_bytes != NULL) {
         key_result = PyBytes_AS_STRING(key_bytes); // Borrowed pointer

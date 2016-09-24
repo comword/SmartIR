@@ -45,7 +45,7 @@ def initWebServer(myport):
         if request.method == 'POST':
             user = request.form['inputUsername']
             if (m_valid_login(user,request.form['inputPassword']) == True):
-                privilage = dbman.get_privilage(user);
+                privilage = dbman.get_privilage(user).decode('utf-8');
                 client_jwt = myjwt.generate_JWT(user,privilage)
                 response = make_response('dashboard.html')
                 response.set_cookie('jwt', client_jwt)
@@ -206,9 +206,9 @@ def initWebServer(myport):
     app.run(host="0.0.0.0",port=int(myport),threaded=True)
 def internet_on():
     try:
-        response = urllib2.urlopen('http://www.baidu.com',timeout=1)
+        response = urllib.request.urlopen('http://www.baidu.com',timeout=1)
         return True
-    except urllib2.URLError as err: pass
+    except urllib.error.URLError as err: pass
     return False
 def m_valid_login(username,password):
     res = dbman.verify_user(username,password)
